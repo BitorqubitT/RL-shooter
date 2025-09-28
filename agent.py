@@ -37,9 +37,6 @@ class agent():
         self.bullet_manager.add_bullet(self.player_name, new_bullet)
         return
 
-    def hit(self):
-        self.hp -= 50
-
     def die():
         return
 

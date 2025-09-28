@@ -141,6 +141,7 @@ class Environment:
         return all_rewards
 
     def _apply_hits(self, hit_counts, deaths):
+        # TODO: Change hp amount and move this to bulletmanager?
         for player in self.all_players:
             if player.player_name in hit_counts:
                 player.hp -= hit_counts[player.player_name] * 10
