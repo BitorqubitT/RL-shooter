@@ -152,9 +152,9 @@ class Environment:
                     deaths[player.player_name] = 0
 
     def _calculate_rewards(self, deaths, hits_taken, hits_made, moved):
-        death_reward=-10,
-        hit_taken_reward=-1,
-        hit_made_reward=10,
+        death_reward=-10
+        hit_taken_reward=-1
+        hit_made_reward=10
         move_reward=0.2
         
         print("Deaths:", deaths)
