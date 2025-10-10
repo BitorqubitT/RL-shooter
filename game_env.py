@@ -138,7 +138,31 @@ class Environment:
         }
 
         all_rewards = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
-        return all_rewards
+        
+        # capute frame
+        
+        surface = self.screen if self.render else self.offscreen_surface
+
+        #From screen cut pov?
+        frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
+        
+        frame = self._cut_pov(frame, self.all_players[0].position)
+        print(frame.shape)
+        
+        return all_rewards, frame
+
+    def _cut_pov(self, frame, player_position):
+        x, y = int(player_position[0]), int(player_position[1])
+        half_width, half_height = 150, 150
+        start_x = max(0, x - half_width)
+        end_x = min(frame.shape[1], x + half_width)
+        start_y = max(0, y - half_height)
+        end_y = min(frame.shape[0], y + half_height)
+        pov_frame = frame[start_y:end_y, start_x:end_x]
+        # need padding
+        # Make them the same color as the walls?
+        return pov_frame
+
 
     def _apply_hits(self, hit_counts, deaths):
         # TODO: Change hp amount and move this to bulletmanager?
@@ -157,10 +181,6 @@ class Environment:
         hit_made_reward=10
         move_reward=0.2
         
-        print("Deaths:", deaths)
-        print("Hits taken:", hits_taken)
-        print("Hits made:", hits_made)
-        print("Moved:", moved)
 
         total_rewards = {}
         for player in self.all_players:
