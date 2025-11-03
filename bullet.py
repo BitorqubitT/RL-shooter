@@ -31,8 +31,10 @@ class bullet():
         return
 
 class bullet_manager():
-    def __init__(self, all_players):
+    def __init__(self, all_players, world_width, world_height):
         self.all_bullets = self._init_bullets(all_players)
+        self.world_width = world_width
+        self.world_height = world_height
 
     def _init_bullets(self, all_players):
         #TODO: change these to numpy array
@@ -44,8 +46,6 @@ class bullet_manager():
     def check_collision(self, player_positions, wall_coordinates):
         # Get these from environment or put them in bullet manager on init.
         # Might need to use numpy arrays for optimisation
-        MAX_X = 1200
-        MAX_Y = 800
         COLLISION_RADIUS = 10.0
 
         hit_counts = defaultdict(int)
@@ -59,7 +59,7 @@ class bullet_manager():
 
             for bullet in bullets:
                 # Check within bounds
-                if not (0.0 <= bullet.x <= MAX_X and 0.0 <= bullet.y <= MAX_Y):
+                if not (0.0 <= bullet.x <= self.world_width and 0.0 <= bullet.y <= self.world_height):
                     continue
 
                 hit = False

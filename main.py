@@ -7,7 +7,7 @@ clock = pygame.time.Clock()
 FPS = 60
 running = True
 RENDER = True
-env = Environment(["badboy", "goodboy", "goodestboy", "badboy1", "goodestboy3", "feelsboy"], RENDER)
+env = Environment(["badboy", "goodboy", "goodestboy", "badboy1", "goodestboy3", "feelsboy"], 1280, 1024, RENDER)
 i = 0
 while running:
     for event in pygame.event.get():
@@ -15,10 +15,11 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
+    #keys = 4
     x, frame = env.step(keys)
     # Save frame as image
-    frame_image = Image.fromarray(frame)
-    frame_image.save(f"frames_per_run/frame_{i}.png")
+    #frame_image = Image.fromarray(frame)
+    #frame_image.save(f"frames_per_run/frame_{i}.png")
     i += 1
     clock.tick(FPS)
 pygame.quit()
@@ -28,35 +29,27 @@ To think:
 The game doesnt really need rounds or whatever. But giving the agent a complete new env etc might be important
 
 FIXME:
-- Pov when no rendering doenst work yet
-- render of aim is bugged (can also remove it for real runs and just add a number for aim)
-- can shoot in the whole map
 
 TODO:
+#1
+- Create nicer world
+- Give every agent a color
+- Create first RL version, shoot standint still agents
+- Make sure I can replay a game.
+    - Not by using images (too static)
+    - Get starting position and then all actions
 
-- Later can add matrix world or different vectors
+#2
+- Make agents move randomly and shoot?(path tracing)
 
-- Make sure everything works for multiple agents 
 
+#IDEAS:
+
+- Add matrix world or different vectors
+- Make sure everything works for multiple agents (battle at the same time, train)
 - add replay system.
-- give every agent a color
-- add image based training
-
-
-These versions are all for training.
-- version one
-    - kill standing still agents
-    
-- version two.
-    - Make agents move randomly (path tracing)
-
 Do I need to start making optimisations?
 Matrix operations only?
-
-    
-
-- Version 4:
-    - teambased
-
+Team based?
 
 """

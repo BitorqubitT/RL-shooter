@@ -9,8 +9,6 @@ from bullet import bullet_manager
 from EnemySprite import EnemySprite
 from BulletSprite import BulletSprite
 
-WORLD_WIDTH = 1280
-WORLD_HEIGHT = 1024
 TILE_SIZE = 1
 
 BACKGROUND_COLOR = (30, 30, 30)
@@ -21,11 +19,13 @@ AIM_COLOR = (255, 255, 0)
 MAP_PATH = "assets/map1.png"
 
 class Environment:
-    def __init__(self, all_players, render=True):
+    def __init__(self, all_players, world_width, world_height, render=True):
         self.render = render
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
-        self.bulletmanager = bullet_manager(all_players)
+        self.world_width = world_width
+        self.world_height = world_height
+        self.bulletmanager = bullet_manager(all_players, world_width, world_height)
         self._setup_players()
 
         if self.render:
@@ -41,7 +41,7 @@ class Environment:
 
     def _init_rendering(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((WORLD_WIDTH, WORLD_HEIGHT))
+        self.screen = pygame.display.set_mode((self.world_width, self.world_height))
 
         self.player_sprites = pygame.sprite.Group()
         self.player_sprite_lookup = {}
@@ -54,7 +54,15 @@ class Environment:
 
     def _init_offscreen_surface(self):
         pygame.init()
-        self.offscreen_surface = pygame.Surface((WORLD_WIDTH, WORLD_HEIGHT))
+        self.offscreen_surface = pygame.Surface((self.world_width, self.world_height))
+        self.player_sprites = pygame.sprite.Group()
+        self.player_sprite_lookup = {}
+        for player in self.all_players:
+            sprite = EnemySprite(player)
+            self.player_sprites.add(sprite)
+            self.player_sprite_lookup[player.player_name] = sprite
+        
+        self.bullet_sprites = pygame.sprite.Group()
 
     def _load_map(self, image_path):
         wall_coords = set()
@@ -69,8 +77,8 @@ class Environment:
 
     def _random_spawn(self):
         while True:
-            x = random.randint(1, WORLD_WIDTH)
-            y = random.randint(1, WORLD_HEIGHT)
+            x = random.randint(1, self.world_width)
+            y = random.randint(1, self.world_height)
             if (x, y) not in self.map:
                 return x, y
 
@@ -113,9 +121,8 @@ class Environment:
 
         self._apply_hits(hit_counts, deaths)
 
-        if self.render:
-            for sprite in self.player_sprites:
-                sprite.update()
+        for sprite in self.player_sprites:
+            sprite.update()
 
         self.bullet_sprites = pygame.sprite.Group()
         for bullets in self.bulletmanager.all_bullets.values():
@@ -124,10 +131,11 @@ class Environment:
                 sprite.update()
                 self.bullet_sprites.add(sprite)
 
-        if self.render:
-            self.player_sprites.draw(self.screen)
-            self.bullet_sprites.draw(self.screen)
-            self._draw_aim_lines(self.screen)
+        self.player_sprites.draw(surface)
+        self.bullet_sprites.draw(surface)
+        self._draw_aim_lines(surface)
+
+        if self.render:            
             pygame.display.flip()
 
         # Compute rewards
@@ -138,16 +146,11 @@ class Environment:
         }
 
         all_rewards = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
-        
-        # capute frame
-        
-        surface = self.screen if self.render else self.offscreen_surface
 
         #From screen cut pov?
         frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
         
         frame = self._cut_pov(frame, self.all_players[0].position)
-        print(frame.shape)
         
         return all_rewards, frame
 

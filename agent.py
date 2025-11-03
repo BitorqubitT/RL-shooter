@@ -40,20 +40,31 @@ class agent():
     def die():
         return
 
-    def action(self, keys) -> None:
-        d = 'PLAYER'
-        if d == "PLAYER":
-            if keys[pygame.K_UP]:
-                self.move((0, -1))
-            if keys[pygame.K_DOWN]:
-                self.move((0, 1))
-            if keys[pygame.K_RIGHT]:
-                self.move((1, 0))
-            if keys[pygame.K_LEFT]:
-                self.move((-1, 0))
-            if keys[pygame.K_s]:
-                self.shoot()
-            if keys[pygame.K_q]:
-                self.angle_pov -= 0.1
-            if keys[pygame.K_e]:
-                self.angle_pov += 0.1
+    def action(self, keys):
+        if isinstance(keys, int):
+            mapping = {
+                0: lambda: self.move((0, -1)),
+                1: lambda: self.move((0, 1)),
+                2: lambda: self.move((1, 0)),
+                3: lambda: self.move((-1, 0)),
+                4: self.shoot,
+                5: lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
+                6: lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
+            }
+            action = mapping.get(keys)
+            if action:
+                action()
+
+        else:
+            key_map = {
+                pygame.K_UP:    lambda: self.move((0, -1)),
+                pygame.K_DOWN:  lambda: self.move((0, 1)),
+                pygame.K_RIGHT: lambda: self.move((1, 0)),
+                pygame.K_LEFT:  lambda: self.move((-1, 0)),
+                pygame.K_s:     self.shoot,
+                pygame.K_q:     lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
+                pygame.K_e:     lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
+            }
+            for k, action in key_map.items():
+                if keys[k]:
+                    action()
