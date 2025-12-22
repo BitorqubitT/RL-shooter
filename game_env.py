@@ -9,6 +9,8 @@ from bullet import bullet_manager
 from EnemySprite import EnemySprite
 from BulletSprite import BulletSprite
 
+import gymnasium as gym
+
 TILE_SIZE = 1
 
 BACKGROUND_COLOR = (30, 30, 30)
@@ -18,17 +20,27 @@ AIM_COLOR = (255, 255, 0)
 
 MAP_PATH = "assets/map1.png"
 
-class Environment:
-    def __init__(self, all_players, world_width, world_height, render=True):
-        self.render = render
+# https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
+
+
+class Environment(gym.Env):
+
+    def __init__(self, all_players, world_width, world_height, render_mode=None):
+        self.render_mode = render_mode
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
+        self.action_space = 8 # Discrete(8)
+        #TODO: Check this one
+        self.observation_space = (300, 300, 3)  # Example shape for image observation
+        #TODO: implement this
+        self.metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
+
         self.world_width = world_width
         self.world_height = world_height
         self.bulletmanager = bullet_manager(all_players, world_width, world_height)
         self._setup_players()
 
-        if self.render:
+        if self.render_mode == "human":
             self._init_rendering()
         else:
             self._init_offscreen_surface()
@@ -85,7 +97,7 @@ class Environment:
     def reset(self):
         self._setup_players()
 
-        if self.render:
+        if self.render_mode == "human":
             self.player_sprites.empty()
             self.player_sprite_lookup = {}
 
@@ -103,9 +115,23 @@ class Environment:
         return {player.player_name: (player.x, player.y) for player in self.all_players}
 
     def step(self, keys):
+        """
+        Args:
+            action ( ActType): 
+
+        Returns:
+            observation ( ObsType): _description_
+            reward (SupportsFloat): _description_
+            terminated (bool): _description_
+            truncated (bool): _description_
+            info (dict):  
+            done: bool (Deprecated) (no longer used in Gymnasium)
+        """
+
         old_positions = self.get_player_positions()
         deaths = {}
 
+        # TODO: Might want to remove resetting of the agent from step function
         for player in self.all_players:
             if not player.alive:
                 self._reset_agent(player)
@@ -145,14 +171,24 @@ class Environment:
             for name in old_positions
         }
 
-        all_rewards = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
+        rewards = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
 
         #From screen cut pov?
         frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
         
-        frame = self._cut_pov(frame, self.all_players[0].position)
+        observation = self._cut_pov(frame, self.all_players[0].position)
         
-        return all_rewards, frame
+        # At this point it is not possible for the player to die
+        # But there are a lot of other reasons why we would want to reset the env
+        # If we dont get any rewards for a long time etc.
+        # How does SB3 handle this?
+        terminated = False
+
+        #TODO: How to deal with truncated?
+        truncated = False
+        done = False
+        info = {}
+        return observation, reward, terminated, truncated, info, done
 
     def _cut_pov(self, frame, player_position):
         x, y = int(player_position[0]), int(player_position[1])
@@ -215,3 +251,6 @@ class Environment:
         """Returns the current visual state as an image (even if not rendering)."""
         surface = self.screen if self.render else self.offscreen_surface
         return pygame.surfarray.array3d(surface)
+
+    def close(self):
+        pygame.quit()
