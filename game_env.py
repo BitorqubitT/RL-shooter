@@ -22,7 +22,6 @@ MAP_PATH = "assets/map1.png"
 
 # https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
 
-
 class Environment(gym.Env):
 
     def __init__(self, all_players, world_width, world_height, render_mode=None):
