@@ -10,6 +10,9 @@ from EnemySprite import EnemySprite
 from BulletSprite import BulletSprite
 
 import gymnasium as gym
+from gymnasium import spaces
+
+import numpy as np
 
 TILE_SIZE = 1
 
@@ -21,6 +24,8 @@ AIM_COLOR = (255, 255, 0)
 MAP_PATH = "assets/map1.png"
 
 # https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
+#TODO: Can create a clase with Enum for actions
+
 
 class Environment(gym.Env):
 
@@ -28,9 +33,11 @@ class Environment(gym.Env):
         self.render_mode = render_mode
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
-        self.action_space = 8 # Discrete(8)
-        #TODO: Check this one
-        self.observation_space = (300, 300, 3)  # Example shape for image observation
+        # For now the agent can only turn one way to aim.
+        self.action_space = spaces.Discrete(7)
+        #TODO: OBS space might be too big. Find the standard and would it work in this game?
+        #TODO: Can i still add other observations
+        self.observation_space = spaces.Dict({"agent": spaces.Box(0, 255, shape=(300, 300, 3), dtype=float)})  # Example shape for image observation
         #TODO: implement this
         self.metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
 
@@ -76,6 +83,33 @@ class Environment(gym.Env):
         self.bullet_sprites = pygame.sprite.Group()
 
     def _load_map(self, image_path):
+        """
+        Fill the padding with:
+        a unique “void” tile (often better)
+        Always render the agent POV from this padded map
+        From the agent’s perspective:
+        The world simply ends in walls
+        Observation shape never changes
+        No need to expose absolute position
+        
+        my solution:
+        Calculate the extra padding needed based on pov
+        first create a big matrix with a certain (3,3,3) value to capture the outside of the map
+        Then place the real map in the middle
+        """
+
+        #TODO: Maybe remove pygame from the environment and make it seperate in main.py
+        # Just give it the grid and draw
+
+        padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
+
+        # 
+
+        
+        self.world_width
+        self.world_height
+
+
         wall_coords = set()
         image = Image.open(image_path).convert("RGBA")
         width, height = image.size
@@ -93,7 +127,7 @@ class Environment(gym.Env):
             if (x, y) not in self.map:
                 return x, y
 
-    def reset(self):
+    def reset(self, seed=None):
         self._setup_players()
 
         if self.render_mode == "human":
@@ -104,6 +138,13 @@ class Environment(gym.Env):
                 sprite = EnemySprite(player)
                 self.player_sprites.add(sprite)
                 self.player_sprite_lookup[player.player_name] = sprite
+
+
+        surface = self.screen if self.render else self.offscreen_surface
+        frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
+        obs = {"agent":self._cut_pov(frame, self.all_players[0].position)}
+        info = {}
+        return (obs, info)
 
     def _reset_agent(self, player):
         player.x, player.y = self._random_spawn()
@@ -135,6 +176,7 @@ class Environment(gym.Env):
             if not player.alive:
                 self._reset_agent(player)
 
+        print("Keys received in step:", keys)
         self.all_players[0].action(keys)
 
         surface = self.screen if self.render else self.offscreen_surface
@@ -170,12 +212,17 @@ class Environment(gym.Env):
             for name in old_positions
         }
 
-        rewards = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
+        reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
 
+        #TODO: Do I still want multiple agents?
+        # Maybe a seperate "dumb  ai"
+
+        reward = reward["badboy"]
+        print("AIOWNDOWNDOWINWWIOWOINDW", reward)
         #From screen cut pov?
         frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
         
-        observation = self._cut_pov(frame, self.all_players[0].position)
+        observation = {"agent":self._cut_pov(frame, self.all_players[0].position)}
         
         # At this point it is not possible for the player to die
         # But there are a lot of other reasons why we would want to reset the env
@@ -185,9 +232,8 @@ class Environment(gym.Env):
 
         #TODO: How to deal with truncated?
         truncated = False
-        done = False
         info = {}
-        return observation, reward, terminated, truncated, info, done
+        return observation, reward, terminated, truncated, info
 
     def _cut_pov(self, frame, player_position):
         x, y = int(player_position[0]), int(player_position[1])
@@ -197,10 +243,12 @@ class Environment(gym.Env):
         start_y = max(0, y - half_height)
         end_y = min(frame.shape[0], y + half_height)
         pov_frame = frame[start_y:end_y, start_x:end_x]
-        # need padding
-        # Make them the same color as the walls?
-        return pov_frame
+        #TODO: add padding -> obs shape
+        # Need to add the padding to the correct side
+        # We want the agent to learn where the edges are
+        # Can also give the arena padding
 
+        return pov_frame
 
     def _apply_hits(self, hit_counts, deaths):
         # TODO: Change hp amount and move this to bulletmanager?
@@ -214,23 +262,21 @@ class Environment(gym.Env):
                     deaths[player.player_name] = 0
 
     def _calculate_rewards(self, deaths, hits_taken, hits_made, moved):
-        death_reward=-10
-        hit_taken_reward=-1
-        hit_made_reward=10
+        death_reward=-10.0
+        hit_taken_reward=-1.0
+        hit_made_reward=10.0
         move_reward=0.2
-        
 
         total_rewards = {}
         for player in self.all_players:
             name = player.player_name
-            reward = 0
+            reward = 0.0
             reward += deaths.get(name, 0) * death_reward
             reward += hits_taken.get(name, 0) * hit_taken_reward
             reward += hits_made.get(name, 0) * hit_made_reward
             reward += moved.get(name, 0) * move_reward
             total_rewards[name] = reward
         return total_rewards
-
 
     def _draw_aim_lines(self, surface):
         aim_length = 30
@@ -250,6 +296,12 @@ class Environment(gym.Env):
         """Returns the current visual state as an image (even if not rendering)."""
         surface = self.screen if self.render else self.offscreen_surface
         return pygame.surfarray.array3d(surface)
+
+    def render(self):
+        if self.render_mode == "human":
+            pygame.display.flip()
+        elif self.render_mode == "rgb_array":
+            return pygame.surfarray.array3d(self.screen if self.render else self.offscreen_surface)
 
     def close(self):
         pygame.quit()

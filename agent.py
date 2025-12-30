@@ -41,6 +41,7 @@ class agent():
         return
 
     def action(self, keys):
+        # TODO: Give option to turn the otherside. For now smaller actionspace is better.
         if isinstance(keys, int):
             mapping = {
                 0: lambda: self.move((0, -1)),
@@ -49,12 +50,15 @@ class agent():
                 3: lambda: self.move((-1, 0)),
                 4: self.shoot,
                 5: lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
-                6: lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
+                #6: lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
             }
             action = mapping.get(keys)
             if action:
                 action()
 
+    #TODO: Maybe remove this from agent and create a wrapper for self play
+
+    """
         else:
             key_map = {
                 pygame.K_UP:    lambda: self.move((0, -1)),
@@ -63,8 +67,10 @@ class agent():
                 pygame.K_LEFT:  lambda: self.move((-1, 0)),
                 pygame.K_s:     self.shoot,
                 pygame.K_q:     lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
-                pygame.K_e:     lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
+                #pygame.K_e:     lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
             }
             for k, action in key_map.items():
+                print(k)
                 if keys[k]:
                     action()
+    """

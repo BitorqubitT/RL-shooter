@@ -4,6 +4,8 @@ import os
 from game_env import Environment
 import gymnasium as gym
 from stable_baselines3 import PPO
+import stable_baselines3.common.env_checker
+
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -12,20 +14,17 @@ RENDER = "human"
 #RENDER = None
 env = Environment(["badboy", "goodboy", "goodestboy", "badboy1", "goodestboy3", "feelsboy"], 1280, 1024, RENDER)
 
-
+stable_baselines3.common.env_checker.check_env(env, warn=True, skip_render_check=True)
 # Takes in ActType( int corresponding to action)
-x = env.step()
-print(x)
+x = env.step(4)
+#print(x)
+
 
 
 
 env.reset()
-
 env.render()
-
-env.close(
-
-)
+env.close()
 
 
 
