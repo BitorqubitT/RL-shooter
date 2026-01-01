@@ -1,4 +1,3 @@
-import pygame
 from utils import distance
 from collections import defaultdict
 import math

@@ -1,4 +1,3 @@
-import pygame
 from bullet import bullet
 
 class agent():

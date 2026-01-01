@@ -2,12 +2,9 @@ import os
 import random
 import math
 from PIL import Image
-import pygame
 
 from agent import agent
 from bullet import bullet_manager
-from EnemySprite import EnemySprite
-from BulletSprite import BulletSprite
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -26,13 +23,13 @@ MAP_PATH = "assets/map1.png"
 # https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
 #TODO: Can create a clase with Enum for actions
 
-
 class Environment(gym.Env):
 
     def __init__(self, all_players, world_width, world_height, render_mode=None):
         self.render_mode = render_mode
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
+        self.world_view = np.zeros((world_height, world_width), dtype=np.uint8)
         # For now the agent can only turn one way to aim.
         self.action_space = spaces.Discrete(7)
         #TODO: OBS space might be too big. Find the standard and would it work in this game?
@@ -46,41 +43,12 @@ class Environment(gym.Env):
         self.bulletmanager = bullet_manager(all_players, world_width, world_height)
         self._setup_players()
 
-        if self.render_mode == "human":
-            self._init_rendering()
-        else:
-            self._init_offscreen_surface()
 
     def _setup_players(self):
         self.all_players = []
         for name in self.player_names:
             x, y = self._random_spawn()
             self.all_players.append(agent(x, y, 100, 0, 3, self.bulletmanager, name, self.map))
-
-    def _init_rendering(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.world_width, self.world_height))
-
-        self.player_sprites = pygame.sprite.Group()
-        self.player_sprite_lookup = {}
-        for player in self.all_players:
-            sprite = EnemySprite(player)
-            self.player_sprites.add(sprite)
-            self.player_sprite_lookup[player.player_name] = sprite
-
-        self.bullet_sprites = pygame.sprite.Group()
-
-    def _init_offscreen_surface(self):
-        pygame.init()
-        self.offscreen_surface = pygame.Surface((self.world_width, self.world_height))
-        self.player_sprites = pygame.sprite.Group()
-        self.player_sprite_lookup = {}
-        for player in self.all_players:
-            sprite = EnemySprite(player)
-            self.player_sprites.add(sprite)
-            self.player_sprite_lookup[player.player_name] = sprite
-        
-        self.bullet_sprites = pygame.sprite.Group()
 
     def _load_map(self, image_path):
         """
@@ -98,17 +66,11 @@ class Environment(gym.Env):
         Then place the real map in the middle
         """
 
-        #TODO: Maybe remove pygame from the environment and make it seperate in main.py
-        # Just give it the grid and draw
+        #TODO: Pad the matrix
+        #padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
 
-        padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
-
-        # 
-
-        
-        self.world_width
-        self.world_height
-
+        #self.world_width
+        #self.world_height
 
         wall_coords = set()
         image = Image.open(image_path).convert("RGBA")
@@ -120,6 +82,29 @@ class Environment(gym.Env):
                     wall_coords.add((x, y))
         return wall_coords
 
+    def _update_world_view(self):
+        #TODO: Can change this to x,y 1d
+        frame = np.zeros((self.world_height, self.world_width, 3), dtype=np.uint8)
+        frame[:, :] = BACKGROUND_COLOR
+
+        for wall in self.map:
+            x, y = wall
+            frame[y, x] = WALL_COLOR
+
+        for player in self.all_players:
+            if player.alive:
+                x, y = int(player.x), int(player.y)
+                frame[y:y+player.height, x:x+player.width] = (0, 255, 0)  # Player color
+
+        for shooter, bullets in self.bulletmanager.all_bullets.items():
+            for bullet in bullets:
+                x, y = int(bullet.x), int(bullet.y)
+                if 0 <= x < self.world_width and 0 <= y < self.world_height:
+                    frame[y, x] = BULLET_COLOR
+
+        return frame
+    
+
     def _random_spawn(self):
         while True:
             x = random.randint(1, self.world_width)
@@ -130,18 +115,6 @@ class Environment(gym.Env):
     def reset(self, seed=None):
         self._setup_players()
 
-        if self.render_mode == "human":
-            self.player_sprites.empty()
-            self.player_sprite_lookup = {}
-
-            for player in self.all_players:
-                sprite = EnemySprite(player)
-                self.player_sprites.add(sprite)
-                self.player_sprite_lookup[player.player_name] = sprite
-
-
-        surface = self.screen if self.render else self.offscreen_surface
-        frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
         obs = {"agent":self._cut_pov(frame, self.all_players[0].position)}
         info = {}
         return (obs, info)
@@ -179,31 +152,10 @@ class Environment(gym.Env):
         print("Keys received in step:", keys)
         self.all_players[0].action(keys)
 
-        surface = self.screen if self.render else self.offscreen_surface
-        surface.fill(BACKGROUND_COLOR)
-        self._render_map(surface)
-
         hit_counts, hit_made_counts = self.bulletmanager.check_collision(self.all_players, self.map)
         self.bulletmanager.update()
 
         self._apply_hits(hit_counts, deaths)
-
-        for sprite in self.player_sprites:
-            sprite.update()
-
-        self.bullet_sprites = pygame.sprite.Group()
-        for bullets in self.bulletmanager.all_bullets.values():
-            for bullet in bullets:
-                sprite = BulletSprite(bullet)
-                sprite.update()
-                self.bullet_sprites.add(sprite)
-
-        self.player_sprites.draw(surface)
-        self.bullet_sprites.draw(surface)
-        self._draw_aim_lines(surface)
-
-        if self.render:            
-            pygame.display.flip()
 
         # Compute rewards
         new_positions = self.get_player_positions()
@@ -214,14 +166,13 @@ class Environment(gym.Env):
 
         reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
 
-        #TODO: Do I still want multiple agents?
-        # Maybe a seperate "dumb  ai"
-
         reward = reward["badboy"]
         print("AIOWNDOWNDOWINWWIOWOINDW", reward)
         #From screen cut pov?
-        frame = pygame.surfarray.array3d(surface).swapaxes(0, 1)  # H x W x C format
-        
+
+        #TODO: use gridworld 
+        updated_frame = self._update_world_view()
+        frame = updated_frame
         observation = {"agent":self._cut_pov(frame, self.all_players[0].position)}
         
         # At this point it is not possible for the player to die
@@ -278,30 +229,5 @@ class Environment(gym.Env):
             total_rewards[name] = reward
         return total_rewards
 
-    def _draw_aim_lines(self, surface):
-        aim_length = 30
-        for player in self.all_players:
-            end_pos = (
-                player.position[0] + math.cos(player.angle_pov) * aim_length,
-                player.position[1] + math.sin(player.angle_pov) * aim_length
-            )
-            pygame.draw.line(surface, AIM_COLOR, player.position, end_pos)
-
-    def _render_map(self, surface):
-        for (x, y) in self.map:
-            rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-            pygame.draw.rect(surface, WALL_COLOR, rect)
-
-    def get_screen_image(self):
-        """Returns the current visual state as an image (even if not rendering)."""
-        surface = self.screen if self.render else self.offscreen_surface
-        return pygame.surfarray.array3d(surface)
-
-    def render(self):
-        if self.render_mode == "human":
-            pygame.display.flip()
-        elif self.render_mode == "rgb_array":
-            return pygame.surfarray.array3d(self.screen if self.render else self.offscreen_surface)
-
     def close(self):
-        pygame.quit()
+        return None
