@@ -89,6 +89,8 @@ class bullet_manager():
         # Give list of enemies and other objects?
         # for bullet in bullet,
         # check for collision
+        print(" update pewpew positions")
         for key in self.all_bullets.keys():
             for bullet in self.all_bullets[key]:
+                print(bullet.x, bullet.y, " before move")
                 bullet.move((4.0, 4.0))

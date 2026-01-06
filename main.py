@@ -10,16 +10,18 @@ RENDER = True
 env = Environment(["badboy", "goodboy", "goodestboy", "badboy1", "goodestboy3", "feelsboy"], 1280, 1024, RENDER)
 i = 0
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    #for event in pygame.event.get():
+        #if event.type == pygame.QUIT:
+         #   running = False
 
-    keys = pygame.key.get_pressed()
-    #keys = 4
-    x, frame = env.step(keys)
+    #keys = pygame.key.get_pressed()
+    keys = 4
+    obs, reward, cap1, cap2, cap3 = env.step(keys)
+    print(reward)
     # Save frame as image
-    #frame_image = Image.fromarray(frame)
-    #frame_image.save(f"frames_per_run/frame_{i}.png")
+    #frame_image = Image.fromarray(obs['agent'], 'RGB')
+    frame_image = Image.fromarray(obs)
+    frame_image.save(f"frames_per_run/frame_{i}.png")
     i += 1
     clock.tick(FPS)
 pygame.quit()

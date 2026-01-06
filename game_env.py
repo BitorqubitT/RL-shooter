@@ -29,7 +29,6 @@ class Environment(gym.Env):
         self.render_mode = render_mode
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
-        self.world_view = np.zeros((world_height, world_width), dtype=np.uint8)
         # For now the agent can only turn one way to aim.
         self.action_space = spaces.Discrete(7)
         #TODO: OBS space might be too big. Find the standard and would it work in this game?
@@ -40,38 +39,19 @@ class Environment(gym.Env):
 
         self.world_width = world_width
         self.world_height = world_height
+        self.world_view = np.zeros((world_height, world_width, 3), dtype=np.uint8)
         self.bulletmanager = bullet_manager(all_players, world_width, world_height)
-        self._setup_players()
+        self.all_players = self._setup_players()
 
 
-    def _setup_players(self):
+    def _setup_players(self) -> list:
         self.all_players = []
         for name in self.player_names:
             x, y = self._random_spawn()
             self.all_players.append(agent(x, y, 100, 0, 3, self.bulletmanager, name, self.map))
+        return self.all_players
 
-    def _load_map(self, image_path):
-        """
-        Fill the padding with:
-        a unique “void” tile (often better)
-        Always render the agent POV from this padded map
-        From the agent’s perspective:
-        The world simply ends in walls
-        Observation shape never changes
-        No need to expose absolute position
-        
-        my solution:
-        Calculate the extra padding needed based on pov
-        first create a big matrix with a certain (3,3,3) value to capture the outside of the map
-        Then place the real map in the middle
-        """
-
-        #TODO: Pad the matrix
-        #padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
-
-        #self.world_width
-        #self.world_height
-
+    def _load_map(self, image_path) -> set:
         wall_coords = set()
         image = Image.open(image_path).convert("RGBA")
         width, height = image.size
@@ -82,14 +62,13 @@ class Environment(gym.Env):
                     wall_coords.add((x, y))
         return wall_coords
 
-    def _update_world_view(self):
-        #TODO: Can change this to x,y 1d
+    def _update_world_view(self) -> np.ndarray:
         frame = np.zeros((self.world_height, self.world_width, 3), dtype=np.uint8)
-        frame[:, :] = BACKGROUND_COLOR
+        frame[:, :] = (255, 255, 255)  # Background color
 
         for wall in self.map:
             x, y = wall
-            frame[y, x] = WALL_COLOR
+            frame[y, x] = (0, 0, 0) #black walls
 
         for player in self.all_players:
             if player.alive:
@@ -100,11 +79,9 @@ class Environment(gym.Env):
             for bullet in bullets:
                 x, y = int(bullet.x), int(bullet.y)
                 if 0 <= x < self.world_width and 0 <= y < self.world_height:
-                    frame[y, x] = BULLET_COLOR
-
-        return frame
-    
-
+                    frame[y:y+3, x:x+3] = (255, 0, 0)  # Bullet color
+        self.world_view = frame
+ 
     def _random_spawn(self):
         while True:
             x = random.randint(1, self.world_width)
@@ -112,12 +89,12 @@ class Environment(gym.Env):
             if (x, y) not in self.map:
                 return x, y
 
-    def reset(self, seed=None):
+    def reset(self, seed=None) -> tuple:
         self._setup_players()
 
-        obs = {"agent":self._cut_pov(frame, self.all_players[0].position)}
+        obs = {"agent":self._cut_pov(self.all_players[0].position)}
         info = {}
-        return (obs, info)
+        return obs, info
 
     def _reset_agent(self, player):
         player.x, player.y = self._random_spawn()
@@ -127,7 +104,7 @@ class Environment(gym.Env):
     def get_player_positions(self):
         return {player.player_name: (player.x, player.y) for player in self.all_players}
 
-    def step(self, keys):
+    def step(self, keys) -> tuple[dict, float, bool, bool, dict]:
         """
         Args:
             action ( ActType): 
@@ -138,8 +115,19 @@ class Environment(gym.Env):
             terminated (bool): _description_
             truncated (bool): _description_
             info (dict):  
-            done: bool (Deprecated) (no longer used in Gymnasium)
         """
+
+        #Remember that we use "real" physics and then we translate to grid world
+        #At some point I might need to add non agents.
+
+        #Steps:
+        #- Receive a move
+        #- Check if anyone died
+        #- perform a move (should stay like this I think)
+        #- update bullets
+        #- check collisions
+        #- calculate rewards
+        #- return observation, reward, terminated, truncated, info 
 
         old_positions = self.get_player_positions()
         deaths = {}
@@ -152,8 +140,8 @@ class Environment(gym.Env):
         print("Keys received in step:", keys)
         self.all_players[0].action(keys)
 
-        hit_counts, hit_made_counts = self.bulletmanager.check_collision(self.all_players, self.map)
         self.bulletmanager.update()
+        hit_counts, hit_made_counts = self.bulletmanager.check_collision(self.all_players, self.map)
 
         self._apply_hits(hit_counts, deaths)
 
@@ -164,29 +152,50 @@ class Environment(gym.Env):
             for name in old_positions
         }
 
+
         reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
-
+        # Change if we ever do multi agent
         reward = reward["badboy"]
-        print("AIOWNDOWNDOWINWWIOWOINDW", reward)
-        #From screen cut pov?
 
-        #TODO: use gridworld 
-        updated_frame = self._update_world_view()
-        frame = updated_frame
-        observation = {"agent":self._cut_pov(frame, self.all_players[0].position)}
-        
+        self._update_world_view()
+        #observation = {"agent":self._cut_pov(self.all_players[0].position)}
+        observation = self.world_view
         # At this point it is not possible for the player to die
         # But there are a lot of other reasons why we would want to reset the env
         # If we dont get any rewards for a long time etc.
         # How does SB3 handle this?
         terminated = False
-
         #TODO: How to deal with truncated?
         truncated = False
         info = {}
         return observation, reward, terminated, truncated, info
 
-    def _cut_pov(self, frame, player_position):
+    def _cut_pov(self, player_position):
+        """
+        Fill the padding with:
+        a unique “void” tile (often better)
+        Always render the agent POV from this padded map
+        From the agent’s perspective:
+        The world simply ends in walls
+        Observation shape never changes
+        No need to expose absolute position
+
+        my solution:
+        Calculate the extra padding needed based on pov
+        first create a big matrix with a certain (3,3,3) value to capture the outside of the map
+        Then place the real map in the middle
+
+        #TODO: Pad the matrix
+        #padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
+
+        """
+
+        # Put real frame in the middle
+
+        frame = self.world_view
+
+        #TODO: change this for world view
+        #TODO: Add the padding to the world view
         x, y = int(player_position[0]), int(player_position[1])
         half_width, half_height = 150, 150
         start_x = max(0, x - half_width)
