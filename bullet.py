@@ -36,7 +36,6 @@ class bullet_manager():
         self.world_height = world_height
 
     def _init_bullets(self, all_players):
-        #TODO: change these to numpy array
         bullets_per_player = {}
         for i in all_players:
             bullets_per_player[i] = []
@@ -89,8 +88,6 @@ class bullet_manager():
         # Give list of enemies and other objects?
         # for bullet in bullet,
         # check for collision
-        print(" update pewpew positions")
         for key in self.all_bullets.keys():
             for bullet in self.all_bullets[key]:
-                print(bullet.x, bullet.y, " before move")
                 bullet.move((4.0, 4.0))
