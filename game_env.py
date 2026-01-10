@@ -27,12 +27,11 @@ class Environment(gym.Env):
 
     def __init__(self, all_players, world_width, world_height, render_mode=None):
         self.render_mode = render_mode
+        #TODO: Make this a dictionary?
         self.player_names = all_players
         self.map = self._load_map(MAP_PATH)
         # For now the agent can only turn one way to aim.
         self.action_space = spaces.Discrete(7)
-        #TODO: OBS space might be too big. Find the standard and would it work in this game?
-        #TODO: Can i still add other observations
         self.observation_space = spaces.Dict({"agent": spaces.Box(0, 255, shape=(300, 300, 3), dtype=float)})  # Example shape for image observation
         #TODO: implement this
         self.metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
@@ -158,55 +157,40 @@ class Environment(gym.Env):
         reward = reward["badboy"]
 
         self._update_world_view()
-        #observation = {"agent":self._cut_pov(self.all_players[0].position)}
-        observation = self.world_view
+        #observation = {"agent":self._cut_pov(self.all_players[0])}
+        #observation = self.world_view
+        observation = self._cut_pov(self.all_players[0])
         # At this point it is not possible for the player to die
         # But there are a lot of other reasons why we would want to reset the env
         # If we dont get any rewards for a long time etc.
         # How does SB3 handle this?
         terminated = False
-        #TODO: How to deal with truncated?
         truncated = False
         info = {}
         return observation, reward, terminated, truncated, info
 
-    def _cut_pov(self, player_position):
-        """
-        Fill the padding with:
-        a unique “void” tile (often better)
-        Always render the agent POV from this padded map
-        From the agent’s perspective:
-        The world simply ends in walls
-        Observation shape never changes
-        No need to expose absolute position
-
-        my solution:
-        Calculate the extra padding needed based on pov
-        first create a big matrix with a certain (3,3,3) value to capture the outside of the map
-        Then place the real map in the middle
-
-        #TODO: Pad the matrix
-        #padded_matrix = np.full((self.world_height + 300, self.world_width + 300), 0, dtype=np.uint8)
-
-        """
-
-        # Put real frame in the middle
-
+    def _cut_pov(self, player):
+        
+        pov_half_width, pov_half_height = 150, 150
+        
+        
         frame = self.world_view
 
-        #TODO: change this for world view
-        #TODO: Add the padding to the world view
-        x, y = int(player_position[0]), int(player_position[1])
-        half_width, half_height = 150, 150
-        start_x = max(0, x - half_width)
-        end_x = min(frame.shape[1], x + half_width)
-        start_y = max(0, y - half_height)
-        end_y = min(frame.shape[0], y + half_height)
-        pov_frame = frame[start_y:end_y, start_x:end_x]
-        #TODO: add padding -> obs shape
-        # Need to add the padding to the correct side
-        # We want the agent to learn where the edges are
-        # Can also give the arena padding
+        padded_matrix = np.full((self.world_height + 300, self.world_width + 300, 3), 0, dtype=np.uint8)
+
+        y, x = pov_half_height, pov_half_width
+        padded_matrix[y:y+frame.shape[0], x:x+frame.shape[1]] = frame
+
+        x, y = int(player.position[0]), int(player.position[1])
+        x = x+pov_half_width
+        y = y+pov_half_height
+
+        start_x = max(0, x - pov_half_width)
+        start_y = max(0, y - pov_half_height)
+        print(start_x, start_y)
+        end_x = min(padded_matrix.shape[1], x + pov_half_width)
+        end_y = min(padded_matrix.shape[0], y + pov_half_height)
+        pov_frame = padded_matrix[start_y:end_y, start_x:end_x]
 
         return pov_frame
 

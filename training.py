@@ -19,13 +19,9 @@ stable_baselines3.common.env_checker.check_env(env, warn=True, skip_render_check
 x = env.step(4)
 #print(x)
 
-
-
-
 env.reset()
 env.render()
 env.close()
-
 
 
 #model = PPO("MlpPolicy", env, verbose=1)
@@ -34,11 +30,6 @@ env.close()
 # https://gymnasium.farama.org/api/env/#gymnasium.Env.step
 # Make it a Gym environment
 # Check if env uses the same function names + return types
-
-
-
-
-
 
 
 """
