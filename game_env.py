@@ -143,14 +143,12 @@ class Environment(gym.Env):
         hit_counts, hit_made_counts = self.bulletmanager.check_collision(self.all_players, self.map)
 
         self._apply_hits(hit_counts, deaths)
-
-        # Compute rewards
+        
         new_positions = self.get_player_positions()
         move_flags = {
             name: int(old_positions[name] != new_positions.get(name))
             for name in old_positions
         }
-
 
         reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
         # Change if we ever do multi agent
@@ -158,7 +156,6 @@ class Environment(gym.Env):
 
         self._update_world_view()
         #observation = {"agent":self._cut_pov(self.all_players[0])}
-        #observation = self.world_view
         observation = self._cut_pov(self.all_players[0])
         # At this point it is not possible for the player to die
         # But there are a lot of other reasons why we would want to reset the env
@@ -169,29 +166,42 @@ class Environment(gym.Env):
         info = {}
         return observation, reward, terminated, truncated, info
 
-    def _cut_pov(self, player):
-        
-        pov_half_width, pov_half_height = 150, 150
-        
-        
+    def _cut_pov(self, player, pov_half_width: int=150, pov_half_height: int=150) -> np.ndarray:
+        """Create a point of view of the player. Add padding for a consistent pov shape.
+
+        Args:
+            player (_type_): Player object
+            pov_half_width (int, optional): Half the pov size that we want. Defaults to 150.
+            pov_half_height (int, optional): Half the pov size that we want. Defaults to 150.
+
+        Returns:
+            pov_frame: Cut out pov
+        """
+
         frame = self.world_view
 
-        padded_matrix = np.full((self.world_height + 300, self.world_width + 300, 3), 0, dtype=np.uint8)
+        px = int(player.position[0])
+        py = int(player.position[1])
 
-        y, x = pov_half_height, pov_half_width
-        padded_matrix[y:y+frame.shape[0], x:x+frame.shape[1]] = frame
+        padded = np.pad(
+            frame,
+            pad_width=(
+                (pov_half_height, pov_half_height),
+                (pov_half_width, pov_half_width),
+                (0, 0)
+            ),
+            mode="constant",
+            constant_values=0
+        )
 
-        x, y = int(player.position[0]), int(player.position[1])
-        x = x+pov_half_width
-        y = y+pov_half_height
+        py += pov_half_height
+        px += pov_half_width
 
-        start_x = max(0, x - pov_half_width)
-        start_y = max(0, y - pov_half_height)
-        print(start_x, start_y)
-        end_x = min(padded_matrix.shape[1], x + pov_half_width)
-        end_y = min(padded_matrix.shape[0], y + pov_half_height)
-        pov_frame = padded_matrix[start_y:end_y, start_x:end_x]
-
+        pov_frame = padded[
+            py - pov_half_height : py + pov_half_height,
+            px - pov_half_width  : px + pov_half_width
+        ] 
+        
         return pov_frame
 
     def _apply_hits(self, hit_counts, deaths):
