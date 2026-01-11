@@ -42,6 +42,7 @@ class bullet_manager():
         return bullets_per_player
 
     def check_collision(self, player_positions, wall_coordinates):
+        #TODO: nice to give world boundries here?
         # Get these from environment or put them in bullet manager on init.
         # Might need to use numpy arrays for optimisation
         COLLISION_RADIUS = 10.0
@@ -90,4 +91,4 @@ class bullet_manager():
         # check for collision
         for key in self.all_bullets.keys():
             for bullet in self.all_bullets[key]:
-                bullet.move((4.0, 4.0))
+                bullet.move((1.0, 1.0))

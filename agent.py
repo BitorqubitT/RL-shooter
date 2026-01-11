@@ -16,7 +16,6 @@ class agent():
         self.alive = True
         self.map = map
 
-    # just set the new position
     def move(self, direction: tuple):
         #TODO: Come up with a nicer solution
         new_x = (self.x + (direction[0] * self.speed))
@@ -28,19 +27,14 @@ class agent():
             self.y += direction[1] * self.speed
             self.position = (self.x + 0.1, self.y + 0.1)
 
-    # Add bullet manager in shoot
     def shoot(self):
-        #player position min mouse
-        # player and angle?
         new_bullet = bullet(self.x, self.y, 5, self.angle_pov, 15)
         self.bullet_manager.add_bullet(self.player_name, new_bullet)
-        return
 
     def die():
         return
 
     def action(self, keys):
-        # TODO: Give option to turn the otherside. For now smaller actionspace is better.
         if isinstance(keys, int):
             mapping = {
                 0: lambda: self.move((0, -1)),
@@ -54,22 +48,3 @@ class agent():
             action = mapping.get(keys)
             if action:
                 action()
-
-    #TODO: Maybe remove this from agent and create a wrapper for self play
-
-    """
-        else:
-            key_map = {
-                pygame.K_UP:    lambda: self.move((0, -1)),
-                pygame.K_DOWN:  lambda: self.move((0, 1)),
-                pygame.K_RIGHT: lambda: self.move((1, 0)),
-                pygame.K_LEFT:  lambda: self.move((-1, 0)),
-                pygame.K_s:     self.shoot,
-                pygame.K_q:     lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
-                #pygame.K_e:     lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
-            }
-            for k, action in key_map.items():
-                print(k)
-                if keys[k]:
-                    action()
-    """

@@ -2,12 +2,19 @@ import pygame
 from game_env import Environment
 from env_wrapper import EnvWrapper
 
-clock = pygame.time.Clock()
-FPS = 60
-running = True
-RENDER = True
+#MAP_PATH = "assets/map1.png"
+MAP_PATH = "assets/open.png"
 
-env = Environment(["badboy", "goodboy", "goodestboy", "badboy1", "goodestboy3", "feeliumboy"], 1280, 1024, RENDER)
+clock = pygame.time.Clock()
+running = True
+RENDER = None
+env = Environment(["badboy"],
+                  1280,
+                  1024,
+                  6,
+                  RENDER,
+                  "basic", 
+                  MAP_PATH)
 
 key_mapping = {
     pygame.K_UP:    0,
@@ -31,7 +38,7 @@ while running:
 
     keys = pygame.key.get_pressed()
     obs, reward, cap1, cap2, cap3 = wrapper.step_from_pygame_keys(keys)
-
+    obs = obs["agent"]
     # Convert obs -> surf, display, etc.
     surf = pygame.surfarray.make_surface(obs.swapaxes(0, 1))
     display.blit(surf, (0, 0))

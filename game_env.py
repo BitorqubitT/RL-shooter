@@ -1,6 +1,4 @@
-import os
 import random
-import math
 from PIL import Image
 
 from agent import agent
@@ -18,36 +16,36 @@ WALL_COLOR = (200, 200, 200)
 BULLET_COLOR = (255, 0, 0)
 AIM_COLOR = (255, 255, 0)
 
-MAP_PATH = "assets/map1.png"
-
 # https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/#sphx-glr-tutorials-gymnasium-basics-environment-creation-py
 #TODO: Can create a clase with Enum for actions
 
 class Environment(gym.Env):
 
-    def __init__(self, all_players, world_width, world_height, render_mode=None):
+    def __init__(self, all_players, world_width, world_height, bot_amount, render_mode, mode, map_name, pov_size=(150, 150)):
         self.render_mode = render_mode
-        #TODO: Make this a dictionary?
         self.player_names = all_players
-        self.map = self._load_map(MAP_PATH)
-        # For now the agent can only turn one way to aim.
+        self.map = self._load_map(map_name)
         self.action_space = spaces.Discrete(7)
         self.observation_space = spaces.Dict({
             "agent": spaces.Box(
                 0, 
                 255, 
-                shape=(300, 300, 3), 
+                shape=(pov_size[0], pov_size[1], 3), 
                 dtype=np.uint8)
-        })  # Example shape for image observation
-        #TODO: implement this
+        })
+        #TODO: REMOVE?
         self.metadata = {
             "render_modes": ["human", "rgb_array"],
               "render_fps": 60}
+        self.mode = mode
         self.world_width = world_width
         self.world_height = world_height
+        self.pov_size = pov_size
         self.world_view = np.zeros((world_height, world_width, 3), dtype=np.uint8)
         self.bulletmanager = bullet_manager(all_players, world_width, world_height)
         self.all_players = self._setup_players()
+        # Bots are non agent units.
+        self.all_bots = self._setup_bots(bot_amount)
 
 
     def _setup_players(self) -> list:
@@ -56,6 +54,13 @@ class Environment(gym.Env):
             x, y = self._random_spawn()
             self.all_players.append(agent(x, y, 100, 0, 3, self.bulletmanager, name, self.map))
         return self.all_players
+    
+    def _setup_bots(self, bot_amount) -> list:
+        self.all_bots = []
+        for i in range(0, bot_amount):
+            x, y = self._random_spawn()
+            self.all_bots.append(agent(x, y, 100, 0, 3, self.bulletmanager, f"bot_{i}", self.map))
+        return self.all_bots
 
     def _load_map(self, image_path) -> set:
         wall_coords = set()
@@ -79,13 +84,19 @@ class Environment(gym.Env):
         for player in self.all_players:
             if player.alive:
                 x, y = int(player.x), int(player.y)
-                frame[y:y+player.height, x:x+player.width] = (0, 255, 0)  # Player color
+                frame[y:y+player.height, x:x+player.width] = (255, 0, 0)
 
+        # BOTS
+        for bot in self.all_bots:
+            if bot.alive:
+                x, y = int(bot.x), int(bot.y)
+                frame[y:y+bot.height, x:x+bot.width] = (0, 0, 255)
+        
         for shooter, bullets in self.bulletmanager.all_bullets.items():
             for bullet in bullets:
                 x, y = int(bullet.x), int(bullet.y)
                 if 0 <= x < self.world_width and 0 <= y < self.world_height:
-                    frame[y:y+3, x:x+3] = (255, 0, 0)  # Bullet color
+                    frame[y:y+bullet.height, x:x+bullet.width] = (255, 255, 0)  # Bullet color
         self.world_view = frame
  
     def _random_spawn(self):
@@ -121,32 +132,23 @@ class Environment(gym.Env):
             truncated (bool): _description_
             info (dict):  
         """
-
-        #Remember that we use "real" physics and then we translate to grid world
-        #At some point I might need to add non agents.
-
-        #Steps:
-        #- Receive a move
-        #- Check if anyone died
-        #- perform a move (should stay like this I think)
-        #- update bullets
-        #- check collisions
-        #- calculate rewards
-        #- return observation, reward, terminated, truncated, info 
-
         old_positions = self.get_player_positions()
         deaths = {}
 
+        units_and_players = self.all_players + self.all_bots
+        
         # TODO: Might want to remove resetting of the agent from step function
-        for player in self.all_players:
+        for player in units_and_players:
             if not player.alive:
                 self._reset_agent(player)
 
         self.all_players[0].action(keys)
 
         self.bulletmanager.update()
-        hit_counts, hit_made_counts = self.bulletmanager.check_collision(self.all_players, self.map)
+        
+        hit_counts, hit_made_counts = self.bulletmanager.check_collision(units_and_players, self.map)
 
+        #TODO: Is this going well with deaths? Check values
         self._apply_hits(hit_counts, deaths)
         
         new_positions = self.get_player_positions()
@@ -163,16 +165,12 @@ class Environment(gym.Env):
         observation = {"agent":self._cut_pov(self.all_players[0])}
         #observation = self._cut_pov(self.all_players[0])
         #observation = self.world_view
-        # At this point it is not possible for the player to die
-        # But there are a lot of other reasons why we would want to reset the env
-        # If we dont get any rewards for a long time etc.
-        # How does SB3 handle this?
         terminated = False
         truncated = False
         info = {}
         return observation, reward, terminated, truncated, info
 
-    def _cut_pov(self, player, pov_half_width: int=150, pov_half_height: int=150) -> np.ndarray:
+    def _cut_pov(self, player) -> np.ndarray:
         """Create a point of view of the player. Add padding for a consistent pov shape.
 
         Args:
@@ -183,6 +181,8 @@ class Environment(gym.Env):
         Returns:
             pov_frame: Cut out pov
         """
+        pov_half_height = int(self.pov_size[0] / 2)
+        pov_half_width = int(self.pov_size[1] / 2)
 
         frame = self.world_view
 
@@ -211,8 +211,9 @@ class Environment(gym.Env):
         return pov_frame
 
     def _apply_hits(self, hit_counts, deaths):
-        # TODO: Change hp amount and move this to bulletmanager?
-        for player in self.all_players:
+        #TODO: How to deal with bots and agents
+        all_units = self.all_players + self.all_bots
+        for player in all_units:
             if player.player_name in hit_counts:
                 player.hp -= hit_counts[player.player_name] * 10
                 if player.hp <= 0:
@@ -226,7 +227,7 @@ class Environment(gym.Env):
         hit_taken_reward=-1.0
         hit_made_reward=10.0
         move_reward=0.2
-
+        #TODO: Can we add a kill reward?
         total_rewards = {}
         for player in self.all_players:
             name = player.player_name
