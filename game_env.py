@@ -32,10 +32,17 @@ class Environment(gym.Env):
         self.map = self._load_map(MAP_PATH)
         # For now the agent can only turn one way to aim.
         self.action_space = spaces.Discrete(7)
-        self.observation_space = spaces.Dict({"agent": spaces.Box(0, 255, shape=(300, 300, 3), dtype=float)})  # Example shape for image observation
+        self.observation_space = spaces.Dict({
+            "agent": spaces.Box(
+                0, 
+                255, 
+                shape=(300, 300, 3), 
+                dtype=np.uint8)
+        })  # Example shape for image observation
         #TODO: implement this
-        self.metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
-
+        self.metadata = {
+            "render_modes": ["human", "rgb_array"],
+              "render_fps": 60}
         self.world_width = world_width
         self.world_height = world_height
         self.world_view = np.zeros((world_height, world_width, 3), dtype=np.uint8)
@@ -90,8 +97,7 @@ class Environment(gym.Env):
 
     def reset(self, seed=None) -> tuple:
         self._setup_players()
-
-        obs = {"agent":self._cut_pov(self.all_players[0].position)}
+        obs = {"agent":self._cut_pov(self.all_players[0])}
         info = {}
         return obs, info
 
@@ -136,7 +142,6 @@ class Environment(gym.Env):
             if not player.alive:
                 self._reset_agent(player)
 
-        print("Keys received in step:", keys)
         self.all_players[0].action(keys)
 
         self.bulletmanager.update()
@@ -155,8 +160,9 @@ class Environment(gym.Env):
         reward = reward["badboy"]
 
         self._update_world_view()
-        #observation = {"agent":self._cut_pov(self.all_players[0])}
-        observation = self._cut_pov(self.all_players[0])
+        observation = {"agent":self._cut_pov(self.all_players[0])}
+        #observation = self._cut_pov(self.all_players[0])
+        #observation = self.world_view
         # At this point it is not possible for the player to die
         # But there are a lot of other reasons why we would want to reset the env
         # If we dont get any rewards for a long time etc.
