@@ -25,7 +25,7 @@ class Environment(gym.Env):
         self.render_mode = render_mode
         self.player_names = all_players
         self.map = self._load_map(map_name)
-        self.action_space = spaces.Discrete(7)
+        self.action_space = spaces.Discrete(6)
         self.observation_space = spaces.Dict({
             "agent": spaces.Box(
                 0, 
@@ -46,6 +46,7 @@ class Environment(gym.Env):
         self.all_players = self._setup_players()
         # Bots are non agent units.
         self.all_bots = self._setup_bots(bot_amount)
+        self.step_count = 0
 
 
     def _setup_players(self) -> list:
@@ -141,7 +142,6 @@ class Environment(gym.Env):
         for player in units_and_players:
             if not player.alive:
                 self._reset_agent(player)
-
         self.all_players[0].action(keys)
 
         self.bulletmanager.update()
@@ -153,7 +153,7 @@ class Environment(gym.Env):
         
         new_positions = self.get_player_positions()
         move_flags = {
-            name: int(old_positions[name] != new_positions.get(name))
+            name: float(old_positions[name] != new_positions.get(name))
             for name in old_positions
         }
 
@@ -168,6 +168,13 @@ class Environment(gym.Env):
         terminated = False
         truncated = False
         info = {}
+        self.step_count += 1
+
+        #TODO: player cant die yet
+
+        if self.step_count == 1000:
+            truncated = True
+
         return observation, reward, terminated, truncated, info
 
     def _cut_pov(self, player) -> np.ndarray:
