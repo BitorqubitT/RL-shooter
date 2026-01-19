@@ -47,6 +47,8 @@ class Environment(gym.Env):
         # Bots are non agent units.
         self.all_bots = self._setup_bots(bot_amount)
         self.step_count = 0
+        #TODO: naive implementation maybe put this in agent later.
+        self.explored = set()
 
 
     def _setup_players(self) -> list:
@@ -97,7 +99,7 @@ class Environment(gym.Env):
             for bullet in bullets:
                 x, y = int(bullet.x), int(bullet.y)
                 if 0 <= x < self.world_width and 0 <= y < self.world_height:
-                    frame[y:y+bullet.height, x:x+bullet.width] = (255, 255, 0)  # Bullet color
+                    frame[y:y+bullet.height, x:x+bullet.width] = (0, 255, 0)  # Bullet color
         self.world_view = frame
  
     def _random_spawn(self):
@@ -133,7 +135,7 @@ class Environment(gym.Env):
             truncated (bool): _description_
             info (dict):  
         """
-        old_positions = self.get_player_positions()
+        #old_positions = self.get_player_positions()
         deaths = {}
 
         units_and_players = self.all_players + self.all_bots
@@ -144,20 +146,39 @@ class Environment(gym.Env):
                 self._reset_agent(player)
         self.all_players[0].action(keys)
 
+
+        x, y = int(self.all_players[0].position[0]), int(self.all_players[0].position[1])
+    
+        # Encourage exploration
+        if (x, y) not in self.explored:
+            self.explored.add((x, y))
+            move_flags = {self.all_players[0].player_name: 1.0}
+        else:
+            move_flags = {self.all_players[0].player_name: 0.0}
+            
+
         self.bulletmanager.update()
         
-        hit_counts, hit_made_counts = self.bulletmanager.check_collision(units_and_players, self.map)
+        hit_counts, hit_made_counts, bullets_missed = self.bulletmanager.check_collision(units_and_players, self.map)
+        if hit_made_counts["badboy"] != 0:
+            print("we  hit", hit_made_counts["badboy"])
+
+        if bullets_missed["badboy"] != 0:
+            print("we missed", bullets_missed["badboy"])
+
 
         #TODO: Is this going well with deaths? Check values
         self._apply_hits(hit_counts, deaths)
-        
-        new_positions = self.get_player_positions()
-        move_flags = {
-            name: float(old_positions[name] != new_positions.get(name))
-            for name in old_positions
-        }
 
-        reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags)
+
+        # Check if space has been explored 
+        #new_positions = self.get_player_positions()
+        #move_flags = {
+        #    name: float(old_positions[name] != new_positions.get(name))
+        #    for name in old_positions
+       # }
+
+        reward = self._calculate_rewards(deaths, hit_counts, hit_made_counts, move_flags, bullets_missed)
         # Change if we ever do multi agent
         reward = reward["badboy"]
 
@@ -172,6 +193,7 @@ class Environment(gym.Env):
 
         #TODO: player cant die yet
 
+        #TODO: Only do this for training
         if self.step_count == 1000:
             truncated = True
 
@@ -216,6 +238,16 @@ class Environment(gym.Env):
         ] 
         
         return pov_frame
+    
+    def _enemy_in_sight(self, player) -> bool:
+        px, py = int(player.x), int(player.y)
+        for other in self.all_players + self.all_bots:
+            if other.player_name != player.player_name and other.alive:
+                ox, oy = int(other.x), int(other.y)
+                #TODO: Look at other options
+                if abs(px - ox) <= 150 and abs(py - oy) <= 150:
+                    return True
+        return False
 
     def _apply_hits(self, hit_counts, deaths):
         #TODO: How to deal with bots and agents
@@ -229,11 +261,12 @@ class Environment(gym.Env):
                 else:
                     deaths[player.player_name] = 0
 
-    def _calculate_rewards(self, deaths, hits_taken, hits_made, moved):
+    def _calculate_rewards(self, deaths, hits_taken, hits_made, moved, bullets_missed):
         death_reward=-10.0
         hit_taken_reward=-1.0
-        hit_made_reward=10.0
-        move_reward=0.2
+        hit_made_reward=20.0
+        move_reward=0.1
+        bullets_missed_reward=-2.0
         #TODO: Can we add a kill reward?
         total_rewards = {}
         for player in self.all_players:
@@ -243,6 +276,7 @@ class Environment(gym.Env):
             reward += hits_taken.get(name, 0) * hit_taken_reward
             reward += hits_made.get(name, 0) * hit_made_reward
             reward += moved.get(name, 0) * move_reward
+            reward += bullets_missed.get(name, 0) * bullets_missed_reward
             total_rewards[name] = reward
         return total_rewards
 
