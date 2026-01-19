@@ -49,9 +49,11 @@ class bullet_manager():
 
         hit_counts = defaultdict(int)
         hits_made_counts = defaultdict(int)
+        bullets_missed = defaultdict(int)
 
         hit_counts = {player.player_name: 0 for player in player_positions}
         hits_made_counts = {player.player_name: 0 for player in player_positions}
+        bullets_missed = {player.player_name: 0 for player in player_positions}
 
         for shooter, bullets in self.all_bullets.items():
             new_bullets = []
@@ -59,6 +61,7 @@ class bullet_manager():
             for bullet in bullets:
                 # Check within bounds
                 if not (0.0 <= bullet.x <= self.world_width and 0.0 <= bullet.y <= self.world_height):
+                    bullets_missed[shooter] += 1
                     continue
 
                 hit = False
@@ -73,6 +76,7 @@ class bullet_manager():
                         break
                 
                 if (int(bullet.x), int(bullet.y)) in wall_coordinates:
+                    bullets_missed[shooter] += 1
                     continue
 
                 if not hit:
@@ -80,7 +84,7 @@ class bullet_manager():
 
             self.all_bullets[shooter] = new_bullets
 
-        return dict(hit_counts), dict(hits_made_counts)
+        return dict(hit_counts), dict(hits_made_counts), dict(bullets_missed)
 
     def add_bullet(self, player_name, new_bullet):
         self.all_bullets[player_name].append(new_bullet)

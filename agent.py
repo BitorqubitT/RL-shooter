@@ -18,7 +18,6 @@ class agent():
 
     def move(self, direction: tuple):
         #TODO: Come up with a nicer solution
-        print("we are moving")
         new_x = (self.x + (direction[0] * self.speed))
         new_y = (self.y + (direction[1] * self.speed))
         if (new_x, new_y) in self.map or new_x < 0 or new_x > 1280 or new_y < 0 or new_y > 1024:
@@ -37,9 +36,10 @@ class agent():
 
     def action(self, keys):
         #TODO: fix this. SB3 returns numpy.int64
+        if keys is None:
+            return
         keys = int(keys)
         if isinstance(keys, int):
-            print("in action")
             mapping = {
                 0: lambda: self.move((0, -1)),
                 1: lambda: self.move((0, 1)),
@@ -51,5 +51,4 @@ class agent():
             }
             action = mapping.get(keys)
             if action:
-                print("do tha thing")
                 action()

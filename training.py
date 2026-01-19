@@ -39,10 +39,10 @@ def main():
     model = PPO("MultiInputPolicy", env, device="cuda", verbose=1)
 
     callback = EpisodicReturnCallback()
-    model.learn(total_timesteps=100_000, callback=callback)
+    model.learn(total_timesteps=300_000, callback=callback)
 
     # Save the trained model
-    model.save("models/ppo_multiinput_env")
+    model.save("models/ppo_multiinput_100k_env")
 
 if __name__ == "__main__":
     main()
