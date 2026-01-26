@@ -12,7 +12,7 @@ RENDER = None
 env = Environment(["badboy"],
                   1280,
                   1024,
-                  6,
+                  25,
                   RENDER,
                   "basic", 
                   MAP_PATH)
@@ -23,15 +23,19 @@ display = pygame.display.set_mode((1280, 1024))
 
 obs, _ = env.reset()
 
+total_reward = 0
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     keys = model.predict(obs, deterministic=False)
-    print("Keys:", keys)
     obs, reward, cap1, cap2, cap3 = env.step(keys[0])
-    obs_screen = env.world_view
-    surf = pygame.surfarray.make_surface(obs_screen.swapaxes(0, 1))
+    total_reward += reward
+    #TODO: would be nice to see distribution of where the reward is coming from
+    print(f"Total reward: {total_reward}")
+    #obs_screen = env.world_view
+    obs2 = obs["agent"]
+    surf = pygame.surfarray.make_surface(obs2.swapaxes(0, 1))
     display.blit(surf, (0, 0))
     pygame.display.flip()

@@ -11,7 +11,7 @@ RENDER = None
 env = Environment(["badboy"],
                   1280,
                   1024,
-                  6,
+                  25,
                   RENDER,
                   "basic", 
                   MAP_PATH)
@@ -30,6 +30,8 @@ wrapper = EnvWrapper(env, key_mapping)
 pygame.init()
 display = pygame.display.set_mode((1280, 1024))
 
+total_reward = 0
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -38,6 +40,8 @@ while running:
 
     keys = pygame.key.get_pressed()
     obs, reward, cap1, cap2, cap3 = wrapper.step_from_pygame_keys(keys)
+    total_reward += reward
+    print(f"Total reward: {total_reward}")
     obs = obs["agent"]
     # Convert obs -> surf, display, etc.
     surf = pygame.surfarray.make_surface(obs.swapaxes(0, 1))

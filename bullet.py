@@ -45,7 +45,7 @@ class bullet_manager():
         #TODO: nice to give world boundries here?
         # Get these from environment or put them in bullet manager on init.
         # Might need to use numpy arrays for optimisation
-        COLLISION_RADIUS = 10.0
+        COLLISION_RADIUS = 12.0
 
         hit_counts = defaultdict(int)
         hits_made_counts = defaultdict(int)
