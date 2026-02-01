@@ -8,13 +8,32 @@ MAP_PATH = "assets/open.png"
 clock = pygame.time.Clock()
 running = True
 RENDER = None
+
+reward_struct = {
+    "hit_made": 1.0,
+    "move": 0.01,
+    "bullets_missed": -0.05,
+    "enemy_in_sight_fired": 0.5,
+    "kill": 3.0,
+    # optional, already implemented but disabled
+    # "death": -10.0,
+    # "hit_taken": -1.0,
+}
+
+env_settings = {
+    "map" : "assets/open.png",
+    "bot_mode" : "stationary" #surival, 
+}
+
 env = Environment(["badboy"],
                   1280,
                   1024,
                   25,
                   RENDER,
-                  "basic", 
-                  MAP_PATH)
+                  reward_struct, 
+                  env_settings,
+                  (150, 150)
+                  )
 
 key_mapping = {
     pygame.K_UP:    0,
@@ -40,6 +59,7 @@ while running:
 
     keys = pygame.key.get_pressed()
     obs, reward, cap1, cap2, cap3 = wrapper.step_from_pygame_keys(keys)
+    print(cap3)
     total_reward += reward
     print(f"Total reward: {total_reward}")
     obs = obs["agent"]

@@ -9,13 +9,33 @@ MAP_PATH = "assets/open.png"
 clock = pygame.time.Clock()
 running = True
 RENDER = None
+
+
+reward_struct = {
+    "hit_made": 1.0,
+    "move": 0.01,
+    "bullets_missed": -0.05,
+    "enemy_in_sight_fired": 0.5,
+    "kill": 3.0,
+    # optional, already implemented but disabled
+    # "death": -10.0,
+    # "hit_taken": -1.0,
+}
+
+env_settings = {
+    "map" : "assets/open.png",
+    "bot_mode" : "stationary" #surival, 
+}
+
 env = Environment(["badboy"],
                   1280,
                   1024,
                   25,
                   RENDER,
-                  "basic", 
-                  MAP_PATH)
+                  reward_struct, 
+                  env_settings,
+                  (150, 150)
+                  )
 
 model = PPO.load("models/ppo_multiinput_100k_env", device="cuda")
 pygame.init()
@@ -31,6 +51,7 @@ while running:
 
     keys = model.predict(obs, deterministic=False)
     obs, reward, cap1, cap2, cap3 = env.step(keys[0])
+    print(cap3)
     total_reward += reward
     #TODO: would be nice to see distribution of where the reward is coming from
     print(f"Total reward: {total_reward}")

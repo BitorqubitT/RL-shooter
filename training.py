@@ -9,8 +9,6 @@ from sb3_contrib import RecurrentPPO
 from sb3_contrib.ppo_recurrent.policies import CnnLstmPolicy
 from sb3_contrib.ppo_recurrent.policies import MultiInputLstmPolicy
 
-MAP_PATH = "assets/open.png"
-
 # Custom callback to print episodic returns during training
 class EpisodicReturnCallback(BaseCallback):
     def _on_step(self) -> bool:
@@ -20,6 +18,22 @@ class EpisodicReturnCallback(BaseCallback):
                 print(f"Episode return: {info['episode']['r']}")
         return True
 
+reward_struct = {
+    "hit_made": 1.0,
+    "move": 0.01,
+    "bullets_missed": -0.05,
+    "enemy_in_sight_fired": 0.05,
+    "kill": 3.0,
+    # optional, already implemented but disabled
+    # "death": -10.0,
+    # "hit_taken": -1.0,
+}
+
+env_settings = {
+    "map" : "assets/open.png",
+    "bot_mode" : "stationary" #surival, 
+}
+
 def main():
     env = Environment(
         ["badboy"],
@@ -27,8 +41,9 @@ def main():
         1024,
         25,
         None,
-        "basic",
-        MAP_PATH
+        reward_struct,
+        env_settings,
+        (150, 150)
     )
 
     # Wrap with Monitor to track episode stats
@@ -38,8 +53,6 @@ def main():
     env.reset()
 
     #TODO: Need to implement steps tracking in my env.
-
-
     #model = PPO("MultiInputPolicy", env, device="cuda", verbose=1)
     
     model = RecurrentPPO(
