@@ -1,4 +1,5 @@
 from bullet import bullet
+import math
 
 class agent():
 
@@ -46,7 +47,7 @@ class agent():
                 2: lambda: self.move((1, 0)),
                 3: lambda: self.move((-1, 0)),
                 4: self.shoot,
-                5: lambda: setattr(self, "angle_pov", self.angle_pov - 0.1),
+                5: lambda: setattr(self, "angle_pov", (self.angle_pov - 0.1) % (2 * math.pi)),
                 #6: lambda: setattr(self, "angle_pov", self.angle_pov + 0.1),
             }
             action = mapping.get(keys)

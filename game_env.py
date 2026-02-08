@@ -10,6 +10,7 @@ import gymnasium as gym
 from gymnasium import spaces
 
 import numpy as np
+import math
 
 TILE_SIZE = 1
 
@@ -45,7 +46,9 @@ class Environment(gym.Env):
                 255,
                 shape=(pov_size[0], pov_size[1], 3),
                 dtype=np.uint8
-            )
+            ),
+            "aim_angle": spaces.Box(low=-1.0, high=1.0, shape=(2,), dtype=np.float32),
+            "position": spaces.Box(low=0.0, high=1.0, shape=(2,), dtype=np.float32)
         })
         self.metadata = {
             "render_modes": ["human", "rgb_array"],
@@ -129,7 +132,16 @@ class Environment(gym.Env):
         self._reset_agent(self.all_players[0])
         self.explored = set()
         self.step_count = 0
-        obs = {"agent": self._cut_pov(self.all_players[0])}
+        angle = self.all_players[0].angle_pov  # assuming this is in radians
+        aim_vec = np.array([math.cos(angle), math.sin(angle)], dtype=np.float32)
+
+        self._update_world_view()
+        obs = {
+            "agent": self._cut_pov(self.all_players[0]), 
+            "aim_angle": aim_vec,
+            "position": np.array([self.all_players[0].x / self.world_width, self.all_players[0].y / self.world_height], dtype=np.float32)
+        }
+        
         info = {}
         return obs, info
 
@@ -179,8 +191,9 @@ class Environment(gym.Env):
             bots_killed = 1
 
         terminated = False
-        if hit_made_counts["badboy"] > 0:
-            terminated = True 
+        #TODO: Check this
+        #if hit_made_counts["badboy"] > 0:
+        #    terminated = True 
 
         enemy_in_sight_fired = {} 
         if self._enemy_in_sight(self.all_players[0]) and action == 4:
@@ -194,16 +207,24 @@ class Environment(gym.Env):
                                          enemy_in_sight_fired,
                                          bots_killed)
         reward = reward["badboy"]
+        angle = self.all_players[0].angle_pov  # assuming this is in radians
+        aim_vec = np.array([math.cos(angle), math.sin(angle)], dtype=np.float32)
 
         self._update_world_view()
-        observation = {"agent": self._cut_pov(self.all_players[0])}
+        observation = {
+            "agent": self._cut_pov(self.all_players[0]), 
+            "aim_angle": aim_vec,
+            "position": np.array([self.all_players[0].x / self.world_width, self.all_players[0].y / self.world_height], dtype=np.float32)
+        }
+        
         truncated = False
         info = {}
         self.step_count += 1
 
         if self.step_count == 1000:
-            truncated = True
+           truncated = True
 
+        #TODO: check this
         info["reward_components"] = {
             "hit_made": hit_made_counts.get("badboy", 0),
             "move": move_flags.get("badboy", 0),
