@@ -7,6 +7,7 @@ class bullet():
     def __init__(self, x, y, damage: int, angle: float, speed: float):
         self.x = x
         self.y = y
+        self.start_position = (x, y)
         self.position = (self.x, self.y)
         self.width = 5
         self.height = 5
@@ -76,6 +77,11 @@ class bullet_manager():
                         break
                 
                 if (int(bullet.x), int(bullet.y)) in wall_coordinates:
+                    bullets_missed[shooter] += 1
+                    continue
+                
+                #if bullet disstance traveled is greater than some value, we can consider it a miss and remove it. This is to prevent bullets from flying indefinitely if they miss everything.
+                if distance(bullet.start_position, bullet.position) > 150.0:
                     bullets_missed[shooter] += 1
                     continue
 

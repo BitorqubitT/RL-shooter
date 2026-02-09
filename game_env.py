@@ -213,6 +213,7 @@ class Environment(gym.Env):
         self._update_world_view()
         observation = {
             "agent": self._cut_pov(self.all_players[0]), 
+            #"agent": self.world_view,
             "aim_angle": aim_vec,
             "position": np.array([self.all_players[0].x / self.world_width, self.all_players[0].y / self.world_height], dtype=np.float32)
         }
