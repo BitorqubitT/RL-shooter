@@ -67,19 +67,19 @@ class Environment(gym.Env):
         self.reward_struct = reward_struct
         self.env_settings = env_settings
 
-
     def _setup_players(self) -> List[agent]:
         players = []
         for name in self.player_names:
             x, y = self._random_spawn()
             players.append(agent(x, y, 100, 0, 3, self.bulletmanager, name, self.map))
         return players
-    
+ 
     def _setup_bots(self, bot_amount: int) -> List[agent]:
         bots = []
         for i in range(bot_amount):
             x, y = self._random_spawn()
             bots.append(agent(x, y, 100, 0, 3, self.bulletmanager, f"bot_{i}", self.map))
+            print(f"Spawned bot at {(x, y)}")
         return bots
 
     def _load_map(self, image_path: str) -> set[Tuple[int, int]]:
@@ -195,9 +195,13 @@ class Environment(gym.Env):
         #if hit_made_counts["badboy"] > 0:
         #    terminated = True 
 
-        enemy_in_sight_fired = {} 
-        if self._enemy_in_sight(self.all_players[0]) and action == 4:
-            enemy_in_sight_fired["badboy"] = 1.0
+        enemy_in_sight_fired = {}
+        truncated = False
+
+        if self._enemy_in_sight(self.all_players[0]):
+            enemy_in_sight_fired[self.all_players[0].player_name] = 1.0
+            truncated = True
+
 
         reward = self._calculate_rewards(deaths, 
                                          hit_counts, 
@@ -218,7 +222,6 @@ class Environment(gym.Env):
             "position": np.array([self.all_players[0].x / self.world_width, self.all_players[0].y / self.world_height], dtype=np.float32)
         }
         
-        truncated = False
         info = {}
         self.step_count += 1
 
@@ -233,7 +236,6 @@ class Environment(gym.Env):
             "enemy_in_sight_fired": enemy_in_sight_fired.get("badboy", 0),
             "kill": bots_killed
         }
-
         return observation, reward, terminated, truncated, info
 
     def _cut_pov(self, player: agent) -> np.ndarray:
@@ -273,13 +275,14 @@ class Environment(gym.Env):
         ] 
         
         return pov_frame
-    
+ 
     def _enemy_in_sight(self, player: agent) -> bool:
         px, py = int(player.x), int(player.y)
         for other in self.all_players + self.all_bots:
             if other.player_name != player.player_name and other.alive:
                 ox, oy = int(other.x), int(other.y)
-                if abs(px - ox) <= 85 and abs(py - oy) <= 85:
+                if abs(px - ox) <= self.pov_size[0] / 2 and abs(py - oy) <= self.pov_size[1] / 2:
+                    print("Enemy in sight!")
                     return True
         return False
 

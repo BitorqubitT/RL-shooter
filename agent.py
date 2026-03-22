@@ -7,8 +7,8 @@ class agent():
         self.player_name = player_name
         self.x = x
         self.y = y
-        self.width = 20
-        self.height = 20
+        self.width = 10
+        self.height = 10
         self.position = (self.x, self.y)
         self.hp = hp
         self.angle_pov = angle_pov
@@ -21,7 +21,7 @@ class agent():
         #TODO: Come up with a nicer solution
         new_x = (self.x + (direction[0] * self.speed))
         new_y = (self.y + (direction[1] * self.speed))
-        if (new_x, new_y) in self.map or new_x < 0 or new_x > 1280 or new_y < 0 or new_y > 1024:
+        if (new_x, new_y) in self.map or new_x < 0 or new_x > 541 or new_y < 0 or new_y > 400:
             return
         else:
             self.x += direction[0] * self.speed

@@ -81,7 +81,7 @@ class bullet_manager():
                     continue
                 
                 #if bullet disstance traveled is greater than some value, we can consider it a miss and remove it. This is to prevent bullets from flying indefinitely if they miss everything.
-                if distance(bullet.start_position, bullet.position) > 150.0:
+                if distance(bullet.start_position, bullet.position) > 100.0:
                     bullets_missed[shooter] += 1
                     continue
 

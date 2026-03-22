@@ -13,9 +13,9 @@ RENDER = None
 
 reward_struct = {
     "hit_made": 1.0,
-    "move": 0.01,
+    "move": 0.001,
     "bullets_missed": -0.05,
-    "enemy_in_sight_fired": 0.5,
+    "enemy_in_sight_fired": 0.1,
     "kill": 3.0,
     # optional, already implemented but disabled
     # "death": -10.0,
@@ -37,7 +37,7 @@ env = Environment(["badboy"],
                   (150, 150)
                   )
 
-model = PPO.load("models/ppo_multiinput_100k_env", device="cuda")
+model = PPO.load("models/ppo_multiinput_400k_env", device="cuda")
 pygame.init()
 display = pygame.display.set_mode((1280, 1024))
 

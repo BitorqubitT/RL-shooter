@@ -1,66 +1,92 @@
-import pygame
 from game_env import Environment
 from stable_baselines3 import PPO
-import stable_baselines3.common.env_checker
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.callbacks import BaseCallback
 
 from sb3_contrib import RecurrentPPO
-from sb3_contrib.ppo_recurrent.policies import CnnLstmPolicy
 from sb3_contrib.ppo_recurrent.policies import MultiInputLstmPolicy
 
+from stable_baselines3.common.logger import configure
+import wandb
 from stable_baselines3.common.callbacks import BaseCallback
 
-import wandb
-from wandb.integration.sb3 import WandbCallback
 
-class RewardStatsCallback(BaseCallback):
+class WandbCallback2(BaseCallback):
+    def _on_step(self) -> bool:
+        infos = self.locals["infos"]
+
+        for info in infos:
+            if "episode" in info:
+                log_dict = {
+                    "episode/reward": info["episode"]["r"],
+                    "episode/length": info["episode"]["l"],
+                }
+
+                if "reward_components" in info:
+                    for k, v in info["reward_components"].items():
+                        log_dict[f"reward_components/{k}"] = v
+
+                wandb.log(log_dict, step=self.num_timesteps)
+
+        return True    
+
+class WandbCallback(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
-        self.current_ep = {}
-        self.episode_stats = []
+        self.episode_rewards = []
+        self.rolling_window = 100
 
     def _on_step(self) -> bool:
         infos = self.locals["infos"]
-        dones = self.locals["dones"]
 
-        for info, done in zip(infos, dones):
-            comps = info.get("reward_components")
-            if comps is not None:
-                for k, v in comps.items():
-                    self.current_ep[k] = self.current_ep.get(k, 0) + v
+        for info in infos:
+            if "episode" in info:
+                ep_reward = info["episode"]["r"]
+                ep_length = info["episode"]["l"]
 
-            if done:
-                # Episode ended — log total sums
-                self.episode_stats.append(self.current_ep.copy())
+                self.episode_rewards.append(ep_reward)
 
-                # Log raw totals
-                for k, v in self.current_ep.items():
-                    self.logger.record(f"reward/{k}", v)
+                # Rolling mean
+                rolling_mean = None
+                if len(self.episode_rewards) >= self.rolling_window:
+                    rolling_mean = sum(
+                        self.episode_rewards[-self.rolling_window:]
+                    ) / self.rolling_window
 
-                # Calculate and log fractions of total reward
-                total = sum(self.current_ep.values()) + 1e-8
-                for k, v in self.current_ep.items():
-                    self.logger.record(f"reward_frac/{k}", v / total)
+                log_dict = {
+                    "episode/reward": ep_reward,
+                    "episode/length": ep_length,
+                }
 
-                self.current_ep.clear()
+                if rolling_mean is not None:
+                    log_dict["episode/reward_rolling_mean_100"] = rolling_mean
+
+                if "reward_components" in info:
+                    for k, v in info["reward_components"].items():
+                        log_dict[f"reward_components/{k}"] = v
+
+                wandb.log(log_dict, step=self.num_timesteps)
 
         return True
 
-wandb.init(
-    project="my-rl-shooter",
-    name="ppo-run-001",
-    config={
-        "algo": "PPO",
-        "timesteps": 200_000,
-    }
-)
+    def _on_rollout_end(self):
+        # Grab SB3 internal training metrics
+        logger_dict = self.model.logger.name_to_value
+
+        train_metrics = {}
+        for key, value in logger_dict.items():
+            if key.startswith("train/"):
+                train_metrics[key] = value
+
+        if train_metrics:
+            wandb.log(train_metrics, step=self.num_timesteps)
+
 
 reward_struct = {
     "hit_made": 1.0,
     "move": 0.01,
     "bullets_missed": -0.05,
-    "enemy_in_sight_fired": 0.50,
+    # use this as enemy found for now
+    "enemy_in_sight_fired": 10.0,
     "kill": 3.0,
     # optional, already implemented but disabled
     # "death": -10.0,
@@ -68,20 +94,37 @@ reward_struct = {
 }
 
 env_settings = {
-    "map" : "assets/open.png",
+    "map" : "assets/open_small.png",
     "bot_mode" : "stationary" #surival, 
 }
 
 def main():
+
+    wandb.init(
+            project = "my_rl_shooter",
+            name = f"experiment_6",
+            config={"map": env_settings["map"],
+                    "bot_mode": env_settings["bot_mode"],
+                    }
+        )
+    
+
+    log_dir = "./sb3_logs"
+
+    new_logger = configure(
+        log_dir,
+        format_strings=["stdout", "tensorboard"]
+    )
+
     env = Environment(
         ["badboy"],
-        1280,
-        1024,
-        25,
+        541,
+        400,
+        1,
         None,
         reward_struct,
         env_settings,
-        (150, 150)
+        (50, 50)
     )
 
     # Wrap with Monitor to track episode stats
@@ -107,13 +150,15 @@ def main():
         learning_rate=3e-4
     )
 
-    callback = RewardStatsCallback()
+    model.set_logger(new_logger)
+    callback = WandbCallback()
     model.learn(
-        total_timesteps=200_000,
-        callback=[callback, WandbCallback()])
-
+        total_timesteps=500_000,
+        callback=callback)
+    
     # Save the trained model
-    model.save("models/ppo_multiinput_100k_env")
+    model.save("models/ppo_multiinput_1000k_env")
+    wandb.finish()
 
 if __name__ == "__main__":
     main()
