@@ -12,7 +12,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 import hydra
 from omegaconf import OmegaConf
 
-
 class WandbCallback2(BaseCallback):
     def _on_step(self) -> bool:
         infos = self.locals["infos"]
@@ -95,13 +94,6 @@ def main(cfg):
         config=OmegaConf.to_container(cfg, resolve=True)
     )
     
-    #log_dir = "./sb3_logs"
-
-    #new_logger = configure(
-    #    log_dir,
-    #    format_strings=["stdout", "tensorboard"]
-    #)
-
     env = Environment(
         cfg.env.all_players,
         cfg.env.world_size[0],
