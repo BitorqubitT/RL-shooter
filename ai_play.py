@@ -3,13 +3,9 @@ from game_env import Environment
 from env_wrapper import EnvWrapper
 from stable_baselines3 import PPO
 
-#MAP_PATH = "assets/map1.png"
-MAP_PATH = "assets/open.png"
-
 clock = pygame.time.Clock()
 running = True
 RENDER = None
-
 
 reward_struct = {
     "hit_made": 1.0,
@@ -23,23 +19,24 @@ reward_struct = {
 }
 
 env_settings = {
-    "map" : "assets/open.png",
+    "map" : "assets/open_small.png",
     "bot_mode" : "stationary" #surival, 
 }
 
-env = Environment(["badboy"],
-                  1280,
-                  1024,
-                  25,
-                  RENDER,
-                  reward_struct, 
-                  env_settings,
-                  (150, 150)
-                  )
+env = Environment(
+    ["badboy"],
+    541,
+    400,
+    1,
+    RENDER,
+    reward_struct, 
+    env_settings,
+    (50, 50)
+    )
 
-model = PPO.load("models/ppo_multiinput_400k_env", device="cuda")
+model = PPO.load("models/ppo_multiinput_1000k_env", device="cuda")
 pygame.init()
-display = pygame.display.set_mode((1280, 1024))
+display = pygame.display.set_mode((541, 400))
 
 obs, _ = env.reset()
 
@@ -50,6 +47,7 @@ while running:
             running = False
 
     keys = model.predict(obs, deterministic=False)
+    print(type(keys))
     obs, reward, cap1, cap2, cap3 = env.step(keys[0])
     print(cap3)
     total_reward += reward

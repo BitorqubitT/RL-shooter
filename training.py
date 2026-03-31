@@ -9,6 +9,9 @@ from stable_baselines3.common.logger import configure
 import wandb
 from stable_baselines3.common.callbacks import BaseCallback
 
+import hydra
+from omegaconf import OmegaConf
+
 
 class WandbCallback2(BaseCallback):
     def _on_step(self) -> bool:
@@ -81,84 +84,60 @@ class WandbCallback(BaseCallback):
             wandb.log(train_metrics, step=self.num_timesteps)
 
 
-reward_struct = {
-    "hit_made": 1.0,
-    "move": 0.01,
-    "bullets_missed": -0.05,
-    # use this as enemy found for now
-    "enemy_in_sight_fired": 10.0,
-    "kill": 3.0,
-    # optional, already implemented but disabled
-    # "death": -10.0,
-    # "hit_taken": -1.0,
-}
+@hydra.main(config_path="config", config_name="config", version_base=None)
+def main(cfg):
 
-env_settings = {
-    "map" : "assets/open_small.png",
-    "bot_mode" : "stationary" #surival, 
-}
-
-def main():
+    print(OmegaConf.to_yaml(cfg))
 
     wandb.init(
-            project = "my_rl_shooter",
-            name = f"experiment_6",
-            config={"map": env_settings["map"],
-                    "bot_mode": env_settings["bot_mode"],
-                    }
-        )
-    
-
-    log_dir = "./sb3_logs"
-
-    new_logger = configure(
-        log_dir,
-        format_strings=["stdout", "tensorboard"]
+        project=cfg.experiment.project,
+        name=cfg.experiment.name,
+        config=OmegaConf.to_container(cfg, resolve=True)
     )
+    
+    #log_dir = "./sb3_logs"
+
+    #new_logger = configure(
+    #    log_dir,
+    #    format_strings=["stdout", "tensorboard"]
+    #)
 
     env = Environment(
-        ["badboy"],
-        541,
-        400,
-        1,
+        cfg.env.all_players,
+        cfg.env.world_size[0],
+        cfg.env.world_size[1],
+        cfg.env.num_bots,
         None,
-        reward_struct,
-        env_settings,
-        (50, 50)
+        cfg.reward,
+        cfg.env,
+        cfg.env.pov, # sloppy, get this from prev config
     )
 
-    # Wrap with Monitor to track episode stats
     env = Monitor(env)
-
-    #stable_baselines3.common.env_checker.check_env(env, warn=True, skip_render_check=True)
     env.reset()
-
-    #TODO: Need to implement steps tracking in my env.
-    #model = PPO("MultiInputPolicy", env, device="cuda", verbose=1)
     
     model = RecurrentPPO(
         MultiInputLstmPolicy,
         env,
-        n_steps=1024,
-        n_epochs=10,
-        batch_size=64,
-        gamma=0.99,
-        gae_lambda=0.95,
-        verbose=1,
-        ent_coef=0.02,
+        n_steps=cfg.train.n_steps,
+        batch_size=cfg.train.batch_size,
+        gamma=cfg.train.gamma,
+        gae_lambda=cfg.train.gae_lambda,
+        ent_coef=cfg.train.ent_coef,
+        learning_rate=cfg.train.learning_rate,
         device="cuda",
-        learning_rate=3e-4
+        verbose=1,
     )
 
-    model.set_logger(new_logger)
-    callback = WandbCallback()
     model.learn(
-        total_timesteps=500_000,
-        callback=callback)
-    
-    # Save the trained model
-    model.save("models/ppo_multiinput_1000k_env")
+        total_timesteps=cfg.train.total_timesteps,
+        callback=WandbCallback()
+    )
+
     wandb.finish()
+
+    # use config combo + result for the name
+    model.save("models/" + cfg.experiment.name)
 
 if __name__ == "__main__":
     main()

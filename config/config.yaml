@@ -1,0 +1,27 @@
+env:
+  all_players: ["badboy"]
+  world_size: [541, 400]
+  num_bots: 10
+  pov: [50, 50]
+  bot_mode: stationary
+  map: assets/open_small.png
+
+reward:
+  hit_made: 1.0
+  move: 0.01
+  bullets_missed: -0.05
+  enemy_in_sight_fired: 10.0
+  kill: 3.0
+
+train:
+  total_timesteps: 10000
+  learning_rate: 3e-4
+  gamma: 0.99
+  gae_lambda: 0.95
+  n_steps: 1024
+  batch_size: 64
+  ent_coef: 0.02
+
+experiment:
+  project: my_rl_shooter
+  name: experiment_6
