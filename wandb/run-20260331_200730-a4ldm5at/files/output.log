@@ -1,0 +1,490 @@
+Spawned bot at (64, 387)
+Spawned bot at (171, 220)
+Spawned bot at (26, 290)
+Spawned bot at (536, 223)
+Spawned bot at (432, 257)
+Spawned bot at (306, 382)
+Spawned bot at (203, 363)
+Spawned bot at (189, 102)
+Spawned bot at (70, 337)
+Spawned bot at (265, 267)
+Spawned bot at (49, 357)
+Spawned bot at (131, 167)
+Spawned bot at (342, 103)
+Spawned bot at (17, 398)
+Spawned bot at (472, 84)
+Spawned bot at (241, 316)
+Spawned bot at (72, 34)
+Spawned bot at (60, 36)
+Spawned bot at (452, 10)
+Spawned bot at (177, 241)
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Wrapping the env in a VecTransposeImage.
+Spawned bot at (81, 356)
+Spawned bot at (523, 351)
+Spawned bot at (84, 104)
+Spawned bot at (88, 49)
+Spawned bot at (253, 212)
+Spawned bot at (438, 96)
+Spawned bot at (265, 308)
+Spawned bot at (334, 23)
+Spawned bot at (397, 6)
+Spawned bot at (481, 226)
+Spawned bot at (429, 179)
+Spawned bot at (493, 226)
+Spawned bot at (394, 6)
+Spawned bot at (145, 385)
+Spawned bot at (74, 7)
+Spawned bot at (18, 383)
+Spawned bot at (525, 353)
+Spawned bot at (276, 206)
+Spawned bot at (201, 289)
+Spawned bot at (537, 288)
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 1e+03    |
+|    ep_rew_mean     | -2.89    |
+| time/              |          |
+|    fps             | 206      |
+|    iterations      | 1        |
+|    time_elapsed    | 4        |
+|    total_timesteps | 1024     |
+---------------------------------
+Spawned bot at (517, 297)
+Spawned bot at (463, 121)
+Spawned bot at (81, 384)
+Spawned bot at (80, 301)
+Spawned bot at (306, 152)
+Spawned bot at (63, 23)
+Spawned bot at (354, 360)
+Spawned bot at (503, 296)
+Spawned bot at (111, 133)
+Spawned bot at (292, 306)
+----------------------------------------
+| rollout/                |            |
+|    ep_len_mean          | 1e+03      |
+|    ep_rew_mean          | -0.595     |
+| time/                   |            |
+|    fps                  | 150        |
+|    iterations           | 2          |
+|    time_elapsed         | 13         |
+|    total_timesteps      | 2048       |
+| train/                  |            |
+|    approx_kl            | 0.01301669 |
+|    clip_fraction        | 0.133      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -1.78      |
+|    explained_variance   | 0.018      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0265    |
+|    n_updates            | 10         |
+|    policy_gradient_loss | -0.0126    |
+|    value_loss           | 0.096      |
+----------------------------------------
+Enemy in sight!
+Spawned bot at (466, 9)
+Spawned bot at (34, 270)
+Spawned bot at (140, 164)
+Spawned bot at (2, 371)
+Spawned bot at (226, 205)
+Spawned bot at (196, 303)
+Spawned bot at (31, 32)
+Spawned bot at (263, 245)
+Spawned bot at (77, 244)
+Spawned bot at (248, 6)
+Enemy in sight!
+Spawned bot at (120, 99)
+Spawned bot at (483, 137)
+Spawned bot at (194, 187)
+Spawned bot at (411, 175)
+Spawned bot at (232, 382)
+Spawned bot at (233, 278)
+Spawned bot at (17, 71)
+Spawned bot at (5, 22)
+Spawned bot at (318, 246)
+Spawned bot at (499, 312)
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 567         |
+|    ep_rew_mean          | 4.71        |
+| time/                   |             |
+|    fps                  | 141         |
+|    iterations           | 3           |
+|    time_elapsed         | 21          |
+|    total_timesteps      | 3072        |
+| train/                  |             |
+|    approx_kl            | 0.010448212 |
+|    clip_fraction        | 0.102       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.76       |
+|    explained_variance   | 0.0374      |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0733     |
+|    n_updates            | 20          |
+|    policy_gradient_loss | -0.00975    |
+|    value_loss           | 0.0894      |
+-----------------------------------------
+Spawned bot at (200, 212)
+Spawned bot at (42, 18)
+Spawned bot at (328, 202)
+Spawned bot at (37, 332)
+Spawned bot at (221, 307)
+Spawned bot at (296, 251)
+Spawned bot at (415, 14)
+Spawned bot at (155, 47)
+Spawned bot at (512, 83)
+Spawned bot at (259, 240)
+Enemy in sight!
+Spawned bot at (82, 180)
+Spawned bot at (130, 367)
+Spawned bot at (348, 180)
+Spawned bot at (341, 116)
+Spawned bot at (119, 275)
+Spawned bot at (290, 199)
+Spawned bot at (33, 110)
+Spawned bot at (88, 240)
+Spawned bot at (359, 62)
+Spawned bot at (183, 36)
+Enemy in sight!
+Spawned bot at (83, 149)
+Spawned bot at (511, 320)
+Spawned bot at (71, 283)
+Spawned bot at (147, 393)
+Spawned bot at (216, 138)
+Spawned bot at (1, 32)
+Spawned bot at (252, 183)
+Spawned bot at (304, 213)
+Spawned bot at (58, 6)
+Spawned bot at (403, 393)
+Enemy in sight!
+Spawned bot at (341, 232)
+Spawned bot at (31, 222)
+Spawned bot at (508, 117)
+Spawned bot at (45, 278)
+Spawned bot at (42, 147)
+Spawned bot at (379, 355)
+Spawned bot at (497, 170)
+Spawned bot at (144, 53)
+Spawned bot at (288, 343)
+Spawned bot at (486, 134)
+Enemy in sight!
+Spawned bot at (413, 326)
+Spawned bot at (479, 20)
+Spawned bot at (440, 10)
+Spawned bot at (407, 380)
+Spawned bot at (308, 83)
+Spawned bot at (111, 166)
+Spawned bot at (326, 179)
+Spawned bot at (261, 347)
+Spawned bot at (81, 28)
+Spawned bot at (88, 30)
+---------------------------------------
+| rollout/                |           |
+|    ep_len_mean          | 409       |
+|    ep_rew_mean          | 6.72      |
+| time/                   |           |
+|    fps                  | 136       |
+|    iterations           | 4         |
+|    time_elapsed         | 29        |
+|    total_timesteps      | 4096      |
+| train/                  |           |
+|    approx_kl            | 0.0116868 |
+|    clip_fraction        | 0.168     |
+|    clip_range           | 0.2       |
+|    entropy_loss         | -1.73     |
+|    explained_variance   | 0.00623   |
+|    learning_rate        | 0.0003    |
+|    loss                 | -0.0695   |
+|    n_updates            | 30        |
+|    policy_gradient_loss | -0.0164   |
+|    value_loss           | 0.969     |
+---------------------------------------
+Enemy in sight!
+Spawned bot at (96, 56)
+Spawned bot at (121, 232)
+Spawned bot at (322, 366)
+Spawned bot at (200, 65)
+Spawned bot at (235, 254)
+Spawned bot at (240, 198)
+Spawned bot at (180, 121)
+Spawned bot at (437, 397)
+Spawned bot at (55, 17)
+Spawned bot at (82, 339)
+Enemy in sight!
+Spawned bot at (145, 263)
+Spawned bot at (44, 244)
+Spawned bot at (504, 123)
+Spawned bot at (441, 44)
+Spawned bot at (356, 288)
+Spawned bot at (295, 296)
+Spawned bot at (257, 361)
+Spawned bot at (191, 138)
+Spawned bot at (48, 113)
+Spawned bot at (456, 54)
+Enemy in sight!
+Spawned bot at (367, 67)
+Spawned bot at (52, 76)
+Spawned bot at (452, 372)
+Spawned bot at (385, 365)
+Spawned bot at (213, 342)
+Spawned bot at (526, 134)
+Spawned bot at (102, 188)
+Spawned bot at (48, 352)
+Spawned bot at (167, 14)
+Spawned bot at (461, 273)
+Enemy in sight!
+Spawned bot at (462, 143)
+Spawned bot at (476, 84)
+Spawned bot at (106, 32)
+Spawned bot at (199, 317)
+Spawned bot at (82, 343)
+Spawned bot at (32, 244)
+Spawned bot at (429, 383)
+Spawned bot at (291, 273)
+Spawned bot at (123, 26)
+Spawned bot at (400, 77)
+Enemy in sight!
+Spawned bot at (1, 358)
+Spawned bot at (120, 38)
+Spawned bot at (512, 208)
+Spawned bot at (416, 382)
+Spawned bot at (80, 9)
+Spawned bot at (450, 70)
+Spawned bot at (7, 162)
+Spawned bot at (317, 46)
+Spawned bot at (391, 73)
+Spawned bot at (88, 216)
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 365         |
+|    ep_rew_mean          | 8.46        |
+| time/                   |             |
+|    fps                  | 127         |
+|    iterations           | 5           |
+|    time_elapsed         | 40          |
+|    total_timesteps      | 5120        |
+| train/                  |             |
+|    approx_kl            | 0.014393207 |
+|    clip_fraction        | 0.159       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.69       |
+|    explained_variance   | -0.00614    |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.00368     |
+|    n_updates            | 40          |
+|    policy_gradient_loss | -0.0147     |
+|    value_loss           | 2.53        |
+-----------------------------------------
+Enemy in sight!
+Spawned bot at (536, 270)
+Spawned bot at (91, 362)
+Spawned bot at (479, 159)
+Spawned bot at (356, 81)
+Spawned bot at (289, 185)
+Spawned bot at (265, 81)
+Spawned bot at (206, 226)
+Spawned bot at (446, 75)
+Spawned bot at (460, 103)
+Spawned bot at (12, 97)
+Spawned bot at (41, 156)
+Spawned bot at (464, 84)
+Spawned bot at (80, 249)
+Spawned bot at (70, 386)
+Spawned bot at (326, 283)
+Spawned bot at (469, 155)
+Spawned bot at (146, 325)
+Spawned bot at (420, 59)
+Spawned bot at (176, 38)
+Spawned bot at (522, 76)
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 383         |
+|    ep_rew_mean          | 8.5         |
+| time/                   |             |
+|    fps                  | 123         |
+|    iterations           | 6           |
+|    time_elapsed         | 49          |
+|    total_timesteps      | 6144        |
+| train/                  |             |
+|    approx_kl            | 0.011995533 |
+|    clip_fraction        | 0.0872      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.62       |
+|    explained_variance   | -0.00703    |
+|    learning_rate        | 0.0003      |
+|    loss                 | 3.91        |
+|    n_updates            | 50          |
+|    policy_gradient_loss | -0.00857    |
+|    value_loss           | 3.36        |
+-----------------------------------------
+Enemy in sight!
+Spawned bot at (389, 234)
+Spawned bot at (490, 298)
+Spawned bot at (63, 241)
+Spawned bot at (502, 131)
+Spawned bot at (470, 373)
+Spawned bot at (16, 158)
+Spawned bot at (373, 275)
+Spawned bot at (236, 381)
+Spawned bot at (314, 56)
+Spawned bot at (73, 315)
+Spawned bot at (508, 343)
+Spawned bot at (50, 34)
+Spawned bot at (288, 242)
+Spawned bot at (501, 119)
+Spawned bot at (336, 344)
+Spawned bot at (335, 363)
+Spawned bot at (359, 161)
+Spawned bot at (134, 151)
+Spawned bot at (277, 344)
+Spawned bot at (132, 380)
+----------------------------------------
+| rollout/                |            |
+|    ep_len_mean          | 398        |
+|    ep_rew_mean          | 8.18       |
+| time/                   |            |
+|    fps                  | 124        |
+|    iterations           | 7          |
+|    time_elapsed         | 57         |
+|    total_timesteps      | 7168       |
+| train/                  |            |
+|    approx_kl            | 0.02009201 |
+|    clip_fraction        | 0.23       |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -1.59      |
+|    explained_variance   | 0.0196     |
+|    learning_rate        | 0.0003     |
+|    loss                 | 0.0616     |
+|    n_updates            | 60         |
+|    policy_gradient_loss | -0.0162    |
+|    value_loss           | 0.619      |
+----------------------------------------
+Enemy in sight!
+Spawned bot at (408, 20)
+Spawned bot at (200, 295)
+Spawned bot at (141, 186)
+Spawned bot at (47, 20)
+Spawned bot at (237, 28)
+Spawned bot at (404, 335)
+Spawned bot at (224, 208)
+Spawned bot at (41, 247)
+Spawned bot at (352, 17)
+Spawned bot at (53, 253)
+Enemy in sight!
+Spawned bot at (55, 168)
+Spawned bot at (164, 146)
+Spawned bot at (210, 376)
+Spawned bot at (275, 50)
+Spawned bot at (385, 297)
+Spawned bot at (402, 50)
+Spawned bot at (394, 148)
+Spawned bot at (152, 146)
+Spawned bot at (420, 80)
+Spawned bot at (212, 150)
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 392         |
+|    ep_rew_mean          | 8.52        |
+| time/                   |             |
+|    fps                  | 125         |
+|    iterations           | 8           |
+|    time_elapsed         | 65          |
+|    total_timesteps      | 8192        |
+| train/                  |             |
+|    approx_kl            | 0.018915314 |
+|    clip_fraction        | 0.129       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.59       |
+|    explained_variance   | 0.0934      |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0387     |
+|    n_updates            | 70          |
+|    policy_gradient_loss | -0.0102     |
+|    value_loss           | 0.938       |
+-----------------------------------------
+Spawned bot at (81, 75)
+Spawned bot at (142, 260)
+Spawned bot at (524, 276)
+Spawned bot at (57, 343)
+Spawned bot at (436, 285)
+Spawned bot at (292, 125)
+Spawned bot at (245, 4)
+Spawned bot at (69, 329)
+Spawned bot at (430, 342)
+Spawned bot at (73, 246)
+Enemy in sight!
+Spawned bot at (428, 79)
+Spawned bot at (204, 184)
+Spawned bot at (510, 139)
+Spawned bot at (124, 268)
+Spawned bot at (287, 323)
+Spawned bot at (465, 243)
+Spawned bot at (143, 7)
+Spawned bot at (322, 34)
+Spawned bot at (42, 221)
+Spawned bot at (216, 51)
+Enemy in sight!
+Spawned bot at (227, 298)
+Spawned bot at (252, 394)
+Spawned bot at (518, 371)
+Spawned bot at (356, 37)
+Spawned bot at (425, 151)
+Spawned bot at (197, 64)
+Spawned bot at (353, 120)
+Spawned bot at (150, 251)
+Spawned bot at (80, 392)
+Spawned bot at (214, 60)
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 398         |
+|    ep_rew_mean          | 8.36        |
+| time/                   |             |
+|    fps                  | 125         |
+|    iterations           | 9           |
+|    time_elapsed         | 73          |
+|    total_timesteps      | 9216        |
+| train/                  |             |
+|    approx_kl            | 0.007422099 |
+|    clip_fraction        | 0.0381      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.58       |
+|    explained_variance   | -0.121      |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.047      |
+|    n_updates            | 80          |
+|    policy_gradient_loss | -0.00294    |
+|    value_loss           | 1.65        |
+-----------------------------------------
+Enemy in sight!
+Spawned bot at (363, 275)
+Spawned bot at (247, 348)
+Spawned bot at (451, 79)
+Spawned bot at (495, 24)
+Spawned bot at (75, 284)
+Spawned bot at (236, 105)
+Spawned bot at (429, 25)
+Spawned bot at (201, 300)
+Spawned bot at (434, 238)
+Spawned bot at (61, 58)
+----------------------------------------
+| rollout/                |            |
+|    ep_len_mean          | 389        |
+|    ep_rew_mean          | 8.46       |
+| time/                   |            |
+|    fps                  | 125        |
+|    iterations           | 10         |
+|    time_elapsed         | 81         |
+|    total_timesteps      | 10240      |
+| train/                  |            |
+|    approx_kl            | 0.01140978 |
+|    clip_fraction        | 0.0943     |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -1.57      |
+|    explained_variance   | 0.0588     |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0598    |
+|    n_updates            | 90         |
+|    policy_gradient_loss | -0.0107    |
+|    value_loss           | 1.53       |
+----------------------------------------

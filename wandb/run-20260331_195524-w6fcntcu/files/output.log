@@ -1,0 +1,11 @@
+Logging to ./sb3_logs
+Error executing job with overrides: []
+Traceback (most recent call last):
+  File "c:\Users\thier\Programming\Python\RL-shooter\training.py", line 113, in main
+    cfg.pov,
+    ^^^^^^^
+omegaconf.errors.ConfigAttributeError: Key 'pov' is not in struct
+    full_key: pov
+    object_type=dict
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
